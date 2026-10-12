@@ -1,0 +1,101 @@
+{
+  "judul": "Analisis Transformasi Web ke Mobile Murni (Flutter) - NusaLearn",
+  "tanggal": "2026-10-13",
+  "penulis_proyek": "Ibnaty Chalisa Adabina (2413025061, PTI24 A)",
+  "program_studi": "Pendidikan Teknologi Informasi - FKIP Universitas Lampung",
+  "ringkasan_eksekutif": {
+    "latar_belakang": "NusaLearn sebelumnya dikembangkan sebagai Multimedia Pembelajaran Interaktif (MPI) berbasis web (HTML5, CSS3, JS) yang dibungkus dengan wrapper aplikasi web (AppsGeyser). Transformasi ini bertujuan memigrasikan NusaLearn menjadi aplikasi mobile murni berbasis Flutter dan Dart dengan performa native, arsitektur terstruktur, dan pengalaman pengguna mobile yang modern.",
+    "target_pengguna": "Siswa SD kelas 4-6 dan SMP.",
+    "fokus_konten": "Eksplorasi Budaya 38 Provinsi di Indonesia, 38 Pahlawan Nasional Indonesia, dan Kuis Interaktif 30 Soal dengan sistem evaluasi cerdas."
+  },
+  "analisis_aset_dan_data_awal": {
+    "berkas_web_lama": [
+      "index.html",
+      "style.css",
+      "script.js"
+    ],
+    "folder_aset": {
+      "lokasi": "assets/",
+      "jumlah_gambar": 78,
+      "kategori": [
+        "Logo aplikasi & institusi (NusaLearn.png, Logo_UnivLampung.png)",
+        "38 Gambar/Foto Budaya & Rumah Adat Daerah",
+        "38 Foto Tokoh Pahlawan Nasional Indonesia"
+      ]
+    },
+    "kelengkapan_data": {
+      "budaya": 38,
+      "pahlawan": 38,
+      "bank_soal": 30
+    }
+  },
+  "gap_analysis_web_vs_mobile_flutter": {
+    "navigasi": {
+      "sebelumnya": "DOM manipulation kaku berbasis CSS display toggle (active/none)",
+      "flutter": "Native Navigator 2.0 / Page Routing dengan animasi slide & fade yang mulus"
+    },
+    "transisi_gambar": {
+      "sebelumnya": "Tampilan gambar berubah mendadak saat masuk ke halaman detail",
+      "flutter": "Hero Animation widget sehingga gambar kartu meluncur dan membesar secara dramatis ke halaman detail"
+    },
+    "performa_dan_memori": {
+      "sebelumnya": "Pemuatan file gambar resolusi tinggi tanpa kompresi memori menyebabkan lag saat scroll",
+      "flutter": "Image cache rendering, precacheImage, dan pemanfaatan AspectRatio widget adaptif"
+    },
+    "pencarian_dan_eksplorasi": {
+      "sebelumnya": "Hanya kotak input teks sederhana",
+      "flutter": "Search bar real-time disertai Filter Chips Kategori Pulau (Sumatera, Jawa, Kalimantan, Sulawesi, Bali & Nusa Tenggara, Maluku & Papua)"
+    },
+    "sistem_kuis_dan_gamifikasi": {
+      "sebelumnya": "Variabel memori global JavaScript (skor hilang saat layar ditutup), confetti berbasis canvas-confetti JS",
+      "flutter": "Quiz Engine modular, timer terisolasi, modal dialog feedback interaktif, penyimpanan skor tertinggi lokal (High Score via SharedPreferences), dan efek Confetti Flutter"
+    },
+    "antarmuka_dan_desain": {
+      "sebelumnya": "Box-shadow statis, responsive layout terbatas",
+      "flutter": "Nuansa Nusantara Modern: Warna Utama Deep Maroon (#900500), Aksen Emas (#D4B356), Latar Krem (#FFF5F0), Material 3 Design, dan Tipografi Google Fonts Poppins"
+    }
+  },
+  "spesifikasi_kebutuhan_sistem": {
+    "fungsional": [
+      "FR-01: Splash Screen dengan animasi logo dan tombol Mulai Belajar",
+      "FR-02: Beranda dengan 4 kartu menu interaktif (Budaya, Pahlawan, Kuis, Tentang)",
+      "FR-03: Jelajah Budaya dengan grid 2-kolom, search, dan filter pulau",
+      "FR-04: Detail Budaya menyajikan sejarah singkat, rumah adat, tarian tradisional, dan bahasa daerah",
+      "FR-05: Daftar Pahlawan Nasional dengan grid 2-kolom dan pencarian nama/asal",
+      "FR-06: Detail Pahlawan menyajikan asal daerah, biografi perjuangan, dan highlight fakta menarik",
+      "FR-07: Kuis Intro dengan panduan aturan main (10 soal acak, 15 detik/soal)",
+      "FR-08: Kuis Interaktif dengan opsi pilihan ganda dan indikator progres",
+      "FR-09: Randomized Quiz mengambil 10 soal acak dari 30 bank soal",
+      "FR-10: Instant Feedback Modal (Benar/Salah beserta pembahasan edukatif)",
+      "FR-11: Penghitungan skor otomatis dan penyimpanan rekor High Score",
+      "FR-12: Halaman Hasil Kuis dengan evaluasi performa, reward animasi confetti, dan tombol ulangi/beranda",
+      "FR-13: Halaman Tentang Aplikasi (informasi pengembang PTI Unila 2026 tanpa mencantumkan dosen pengampu sesuai instruksi)",
+      "FR-14: Navigasi back button dan state management yang konsisten"
+    ],
+    "non_fungsional": [
+      "NFR-01: Usability ramah anak usia SD dan SMP",
+      "NFR-02: Waktu respons rendering < 16ms (60 FPS)",
+      "NFR-03: Kompatibel dengan Android OS (SDK 21 s/d SDK 36)",
+      "NFR-04: Antarmuka adaptif untuk berbagai resolusi layar smartphone",
+      "NFR-05: 100% Offline Ready (semua data dan aset tersimpan di dalam bundle APK)"
+    ]
+  },
+  "arsitektur_dan_teknologi": {
+    "framework": "Flutter (Channel Stable, Dart 3)",
+    "arsitektur": "Layered Architecture (Data, Models, Screens, Widgets, Constants)",
+    "dependencies": {
+      "google_fonts": "^6.2.1",
+      "shared_preferences": "^2.3.2",
+      "confetti": "^0.7.0"
+    },
+    "palet_warna": {
+      "primary": "#900500",
+      "accent": "#D4B356",
+      "background": "#FFF5F0",
+      "card_surface": "#FFFFFF",
+      "text_primary": "#2D3142",
+      "text_secondary": "#6B7280"
+    }
+  },
+  "kesimpulan": "Transformasi dari web wrapper ke Flutter murni akan meningkatkan performa, kegunaan, dan nilai estetika secara signifikan, memenuhi seluruh kriteria PRD dan SRD dalam proposal mobile programming."
+}
