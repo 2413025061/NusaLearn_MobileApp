@@ -1,14 +1,62 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../models/hero_model.dart';
+import '../services/storage_service.dart';
 
-class HeroDetailScreen extends StatelessWidget {
+class HeroDetailScreen extends StatefulWidget {
   final HeroItem item;
 
   const HeroDetailScreen({super.key, required this.item});
 
   @override
+  State<HeroDetailScreen> createState() => _HeroDetailScreenState();
+}
+
+class _HeroDetailScreenState extends State<HeroDetailScreen> {
+  bool _isLearned = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _markAndCheckLearned();
+  }
+
+  Future<void> _markAndCheckLearned() async {
+    // Otomatis tandai sebagai sudah dipelajari
+    await StorageService.markHeroAsLearned(widget.item.id);
+    if (mounted) {
+      setState(() {
+        _isLearned = true;
+      });
+    }
+  }
+
+  Future<void> _toggleLearned() async {
+    await StorageService.toggleHeroLearned(widget.item.id);
+    final status = await StorageService.isHeroLearned(widget.item.id);
+    if (mounted) {
+      setState(() {
+        _isLearned = status;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isLearned
+                ? '✅ Ditandai sudah dipelajari!'
+                : '⏳ Ditandai belum dipelajari.',
+          ),
+          duration: const Duration(milliseconds: 1500),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
@@ -24,10 +72,27 @@ class HeroDetailScreen extends StatelessWidget {
                 backgroundColor: Colors.black.withOpacity(0.4),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, true),
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withOpacity(0.4),
+                  child: IconButton(
+                    tooltip: _isLearned ? 'Selesai dipelajari' : 'Tandai selesai',
+                    icon: Icon(
+                      _isLearned ? Icons.check_circle_rounded : Icons.check_circle_outline_rounded,
+                      color: _isLearned ? AppColors.accent : Colors.white,
+                      size: 22,
+                    ),
+                    onPressed: _toggleLearned,
+                  ),
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 item.title,
@@ -80,7 +145,7 @@ class HeroDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Info & Origin Tag
+                  // Info & Status Bar
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
@@ -96,39 +161,88 @@ class HeroDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.military_tech_rounded, color: AppColors.primary, size: 24),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.military_tech_rounded, color: AppColors.primary, size: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.region,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item.info,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.region,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.accent,
-                                ),
+                        const SizedBox(height: 12),
+                        const Divider(height: 1),
+                        const SizedBox(height: 10),
+                        // Status Progres Belajar Pill
+                        InkWell(
+                          onTap: _toggleLearned,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _isLearned
+                                  ? const Color(0xFF2E7D32).withOpacity(0.15)
+                                  : Colors.grey.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _isLearned ? const Color(0xFF2E7D32) : Colors.grey,
+                                width: 1,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                item.info,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _isLearned
+                                      ? Icons.check_circle_rounded
+                                      : Icons.radio_button_unchecked_rounded,
+                                  size: 15,
+                                  color: _isLearned ? const Color(0xFF2E7D32) : Colors.grey[700],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  _isLearned ? 'Selesai Dipelajari' : 'Belum Dipelajari (Ketuk untuk menandai)',
+                                  style: TextStyle(
+                                    color: _isLearned
+                                        ? const Color(0xFF1B5E20)
+                                        : Colors.grey[800],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

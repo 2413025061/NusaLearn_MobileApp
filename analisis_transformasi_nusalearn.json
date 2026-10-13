@@ -70,7 +70,8 @@
       "FR-11: Penghitungan skor otomatis dan penyimpanan rekor High Score",
       "FR-12: Halaman Hasil Kuis dengan evaluasi performa, reward animasi confetti, dan tombol ulangi/beranda",
       "FR-13: Halaman Tentang Aplikasi (informasi pengembang PTI Unila 2026 tanpa mencantumkan dosen pengampu sesuai instruksi)",
-      "FR-14: Navigasi back button dan state management yang konsisten"
+      "FR-14: Navigasi back button dan state management yang konsisten",
+      "FR-15: Pelacakan Progres Belajar (Pelacakan otomatis materi 38 provinsi & 38 pahlawan yang dibaca, badge status selesai pada kartu, filter baca/belum, dashboard level wawasan nusantara, dan persistensi lokal via SharedPreferences)"
     ],
     "non_fungsional": [
       "NFR-01: Usability ramah anak usia SD dan SMP",

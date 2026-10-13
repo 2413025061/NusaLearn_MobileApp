@@ -1,14 +1,62 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../models/culture_model.dart';
+import '../services/storage_service.dart';
 
-class CultureDetailScreen extends StatelessWidget {
+class CultureDetailScreen extends StatefulWidget {
   final CultureItem item;
 
   const CultureDetailScreen({super.key, required this.item});
 
   @override
+  State<CultureDetailScreen> createState() => _CultureDetailScreenState();
+}
+
+class _CultureDetailScreenState extends State<CultureDetailScreen> {
+  bool _isLearned = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _markAndCheckLearned();
+  }
+
+  Future<void> _markAndCheckLearned() async {
+    // Otomatis tandai sebagai sudah dibaca / dipelajari
+    await StorageService.markCultureAsLearned(widget.item.id);
+    if (mounted) {
+      setState(() {
+        _isLearned = true;
+      });
+    }
+  }
+
+  Future<void> _toggleLearned() async {
+    await StorageService.toggleCultureLearned(widget.item.id);
+    final status = await StorageService.isCultureLearned(widget.item.id);
+    if (mounted) {
+      setState(() {
+        _isLearned = status;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isLearned
+                ? '✅ Ditandai sudah dipelajari!'
+                : '⏳ Ditandai belum dipelajari.',
+          ),
+          duration: const Duration(milliseconds: 1500),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
@@ -24,10 +72,27 @@ class CultureDetailScreen extends StatelessWidget {
                 backgroundColor: Colors.black.withOpacity(0.4),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, true),
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withOpacity(0.4),
+                  child: IconButton(
+                    tooltip: _isLearned ? 'Selesai dipelajari' : 'Tandai selesai',
+                    icon: Icon(
+                      _isLearned ? Icons.check_circle_rounded : Icons.check_circle_outline_rounded,
+                      color: _isLearned ? AppColors.accent : Colors.white,
+                      size: 22,
+                    ),
+                    onPressed: _toggleLearned,
+                  ),
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 item.title,
@@ -79,29 +144,78 @@ class CultureDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Region Pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.accent),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.place_rounded, size: 16, color: AppColors.primary),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Wilayah: ${item.region}',
-                          style: const TextStyle(
-                            color: AppColors.primaryDark,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                  // Badges Row: Region Pill + Progres Belajar Status
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      // Region Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.accent),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.place_rounded, size: 16, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Wilayah: ${item.region}',
+                              style: const TextStyle(
+                                color: AppColors.primaryDark,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Status Belajar Pill
+                      InkWell(
+                        onTap: _toggleLearned,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _isLearned
+                                ? const Color(0xFF2E7D32).withOpacity(0.15)
+                                : Colors.grey.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _isLearned ? const Color(0xFF2E7D32) : Colors.grey,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isLearned
+                                    ? Icons.check_circle_rounded
+                                    : Icons.radio_button_unchecked_rounded,
+                                size: 15,
+                                color: _isLearned ? const Color(0xFF2E7D32) : Colors.grey[700],
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _isLearned ? 'Selesai Dipelajari' : 'Belum Selesai',
+                                style: TextStyle(
+                                  color: _isLearned
+                                      ? const Color(0xFF1B5E20)
+                                      : Colors.grey[800],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 18),
