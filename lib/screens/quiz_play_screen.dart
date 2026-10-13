@@ -30,7 +30,6 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
   }
 
   void _initQuiz() {
-    // Ambil 10 soal secara acak dari bank 30 soal
     final shuffled = List<QuizQuestion>.from(AppData.questions)..shuffle();
     _sessionQuestions = shuffled.take(10).toList();
     _currentIndex = 0;
@@ -54,69 +53,75 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
         });
       } else {
         _timer?.cancel();
-        _onAnswerSubmitted(-1); // Timeout
+        // Waktu habis, otomatis cek sebagai salah
+        _onTimeExpired();
       }
     });
   }
 
-  void _onAnswerSubmitted(int selectedIndex) {
+  void _onTimeExpired() {
+    if (_isAnswerChecked) return;
+    setState(() {
+      _isAnswerChecked = true;
+      _selectedOptionIndex = -1; // -1 = waktu habis
+    });
+    _showFeedbackDialog(isTimeout: true, isCorrect: false);
+  }
+
+  void _onAnswerSubmitted(int optionIndex) {
     if (_isAnswerChecked) return;
     _timer?.cancel();
 
     final currentQ = _sessionQuestions[_currentIndex];
-    final isCorrect = selectedIndex == currentQ.answerIndex;
+    final isCorrect = optionIndex == currentQ.answerIndex;
 
     setState(() {
       _isAnswerChecked = true;
-      _selectedOptionIndex = selectedIndex;
+      _selectedOptionIndex = optionIndex;
       if (isCorrect) {
         _score += 10;
         _correctCount++;
       }
     });
 
-    _showFeedbackDialog(isCorrect: isCorrect, isTimeout: selectedIndex == -1, question: currentQ);
+    _showFeedbackDialog(isTimeout: false, isCorrect: isCorrect);
   }
 
-  void _showFeedbackDialog({
-    required bool isCorrect,
-    required bool isTimeout,
-    required QuizQuestion question,
-  }) {
+  void _showFeedbackDialog({required bool isTimeout, required bool isCorrect}) {
+    final question = _sessionQuestions[_currentIndex];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    String statusTitle = 'Jawaban Tepat! 🎉';
+    Color statusColor = AppColors.correct;
+    IconData statusIcon = Icons.check_circle_rounded;
+
+    if (isTimeout) {
+      statusTitle = 'Waktu Habis! ⏰';
+      statusColor = AppColors.wrong;
+      statusIcon = Icons.timer_off_rounded;
+    } else if (!isCorrect) {
+      statusTitle = 'Belum Tepat! ❌';
+      statusColor = AppColors.wrong;
+      statusIcon = Icons.cancel_rounded;
+    }
+
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
-        String statusTitle;
-        Color statusColor;
-        IconData statusIcon;
-
-        if (isTimeout) {
-          statusTitle = 'WAKTU HABIS! ⏱️';
-          statusColor = const Color(0xFFE65100);
-          statusIcon = Icons.hourglass_disabled_rounded;
-        } else if (isCorrect) {
-          statusTitle = 'JAWABAN BENAR! 🎉';
-          statusColor = AppColors.correct;
-          statusIcon = Icons.check_circle_rounded;
-        } else {
-          statusTitle = 'JAWABAN SALAH ❌';
-          statusColor = AppColors.wrong;
-          statusIcon = Icons.cancel_rounded;
-        }
-
         return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.12),
                   shape: BoxShape.circle,
@@ -136,15 +141,16 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: isDark ? AppColors.surfaceDarkMuted : AppColors.background,
                   borderRadius: BorderRadius.circular(16),
+                  border: isDark ? Border.all(color: AppColors.borderDark) : null,
                 ),
                 child: Text(
                   question.explanation,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textPrimary,
+                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                     height: 1.5,
                   ),
                 ),
@@ -158,7 +164,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     _goToNextQuestion();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: isDark ? AppColors.primaryDarkTheme : AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
@@ -186,7 +192,6 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
       });
       _startTimerForQuestion();
     } else {
-      // Sesi Kuis Selesai! Simpan skor
       await StorageService.saveScore(_score);
       if (mounted) {
         Navigator.pushReplacement(
@@ -214,9 +219,10 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
   @override
   Widget build(BuildContext context) {
     final currentQ = _sessionQuestions[_currentIndex];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Kuis NusaLearn'),
         automaticallyImplyLeading: false,
@@ -227,17 +233,32 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Keluar dari Kuis?'),
-                  content: const Text('Progres kuis saat ini tidak akan disimpan jika kamu keluar.'),
+                  backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  title: Text(
+                    'Keluar dari Kuis?',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+                    ),
+                  ),
+                  content: Text(
+                    'Progres kuis saat ini tidak akan disimpan jika kamu keluar.',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    ),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Lanjutkan Kuis'),
+                      child: Text(
+                        'Lanjutkan Kuis',
+                        style: TextStyle(color: isDark ? AppColors.accent : AppColors.primary),
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // Tutup dialog
-                        Navigator.pop(context); // Kembali ke Intro
+                        Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       child: const Text('Keluar', style: TextStyle(color: Colors.red)),
                     ),
@@ -261,15 +282,17 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: isDark
+                          ? AppColors.accent.withOpacity(0.18)
+                          : AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       'Soal ${_currentIndex + 1} / ${_sessionQuestions.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: isDark ? AppColors.accentLight : AppColors.primary,
                       ),
                     ),
                   ),
@@ -279,7 +302,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: _timeLeft <= 5 ? AppColors.wrong : AppColors.primary,
+                      color: _timeLeft <= 5 ? AppColors.wrong : (isDark ? AppColors.primaryDark : AppColors.primary),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.accent, width: 2.5),
                       boxShadow: [
@@ -310,7 +333,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
                   value: (_currentIndex + 1) / _sessionQuestions.length,
-                  backgroundColor: Colors.black.withOpacity(0.08),
+                  backgroundColor: isDark ? const Color(0xFF383030) : Colors.black.withOpacity(0.08),
                   valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
                   minHeight: 6,
                 ),
@@ -322,11 +345,14 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? AppColors.surfaceDark : Colors.white,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.04),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
                       blurRadius: 15,
                       offset: const Offset(0, 6),
                     ),
@@ -334,10 +360,10 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                 ),
                 child: Text(
                   currentQ.question,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                     height: 1.5,
                   ),
                 ),
@@ -363,15 +389,19 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.white,
+                              color: isSelected
+                                  ? (isDark ? AppColors.primaryLight.withOpacity(0.25) : AppColors.primary.withOpacity(0.08))
+                                  : (isDark ? AppColors.surfaceDark : Colors.white),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected ? AppColors.primary : Colors.black.withOpacity(0.08),
+                                color: isSelected
+                                    ? (isDark ? AppColors.accent : AppColors.primary)
+                                    : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
                                 width: isSelected ? 1.8 : 1.0,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.03),
+                                  color: isDark ? Colors.black26 : Colors.black.withOpacity(0.03),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -383,14 +413,18 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: isSelected ? AppColors.primary : AppColors.background,
+                                    color: isSelected
+                                        ? (isDark ? AppColors.primaryDarkTheme : AppColors.primary)
+                                        : (isDark ? AppColors.surfaceDarkMuted : AppColors.background),
                                     shape: BoxShape.circle,
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    String.fromCharCode(65 + idx), // A, B, C, D
+                                    String.fromCharCode(65 + idx),
                                     style: TextStyle(
-                                      color: isSelected ? Colors.white : AppColors.primary,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : (isDark ? AppColors.accentLight : AppColors.primary),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
                                     ),
@@ -403,7 +437,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                      color: AppColors.textPrimary,
+                                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                                     ),
                                   ),
                                 ),

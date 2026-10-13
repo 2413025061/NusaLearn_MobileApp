@@ -35,9 +35,10 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
   @override
   Widget build(BuildContext context) {
     final result = widget.result;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         alignment: Alignment.topCenter,
         children: [
@@ -53,11 +54,12 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? AppColors.surfaceDark : Colors.white,
                         borderRadius: BorderRadius.circular(28),
+                        border: isDark ? Border.all(color: AppColors.borderDark) : null,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.12),
+                            color: isDark ? Colors.black38 : AppColors.primary.withOpacity(0.12),
                             blurRadius: 25,
                             offset: const Offset(0, 10),
                           ),
@@ -68,19 +70,19 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                           Text(
                             result.feedbackTitle,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
+                              color: isDark ? AppColors.accent : AppColors.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             result.feedbackMessage,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textSecondary,
+                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                               height: 1.5,
                             ),
                           ),
@@ -92,8 +94,10 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                             height: 140,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryLight],
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [const Color(0xFF6B0E09), const Color(0xFF420604)]
+                                    : [AppColors.primary, AppColors.primaryLight],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -141,12 +145,14 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                                 icon: Icons.check_circle_rounded,
                                 label: '${result.correctAnswers} Benar',
                                 color: AppColors.correct,
+                                isDark: isDark,
                               ),
                               const SizedBox(width: 16),
                               _buildStatBadge(
                                 icon: Icons.cancel_rounded,
                                 label: '${result.totalQuestions - result.correctAnswers} Salah',
                                 color: AppColors.wrong,
+                                isDark: isDark,
                               ),
                             ],
                           ),
@@ -167,7 +173,7 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: isDark ? AppColors.primaryDarkTheme : AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -202,8 +208,11 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                           );
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary, width: 1.5),
+                          foregroundColor: isDark ? AppColors.accent : AppColors.primary,
+                          side: BorderSide(
+                            color: isDark ? AppColors.accent : AppColors.primary,
+                            width: 1.5,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -248,13 +257,13 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
     );
   }
 
-  Widget _buildStatBadge({required IconData icon, required String label, required Color color}) {
+  Widget _buildStatBadge({required IconData icon, required String label, required Color color, required bool isDark}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity(isDark ? 0.22 : 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacity(0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

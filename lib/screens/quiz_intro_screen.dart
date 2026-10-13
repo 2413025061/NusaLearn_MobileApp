@@ -30,8 +30,10 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Kuis Interaktif'),
         leading: IconButton(
@@ -52,7 +54,7 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.12),
+                      color: isDark ? Colors.black38 : AppColors.primary.withOpacity(0.12),
                       blurRadius: 25,
                       offset: const Offset(0, 10),
                     ),
@@ -69,7 +71,11 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
                       color: AppColors.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.sports_esports_rounded, size: 70, color: AppColors.primary),
+                    child: Icon(
+                      Icons.sports_esports_rounded,
+                      size: 70,
+                      color: isDark ? AppColors.accent : AppColors.primary,
+                    ),
                   ),
                 ),
               ),
@@ -79,16 +85,16 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
               Text(
                 'Waktunya QUIZ! 🚀',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.primary,
+                      color: isDark ? AppColors.accent : AppColors.primary,
                       fontWeight: FontWeight.w900,
                     ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Uji seberapa dalam pengetahuanmu tentang keanekaragaman budaya daerah dan pahlawan nasional Indonesia!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -100,16 +106,16 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildRuleBadge(icon: Icons.psychology_rounded, label: '10 Soal Acak', color: const Color(0xFF1565C0)),
+                  _buildRuleBadge(icon: Icons.psychology_rounded, label: '10 Soal Acak', color: const Color(0xFF1565C0), isDark: isDark),
                   const SizedBox(width: 12),
-                  _buildRuleBadge(icon: Icons.timer_rounded, label: '15 Detik / Soal', color: const Color(0xFFE65100)),
+                  _buildRuleBadge(icon: Icons.timer_rounded, label: '15 Detik / Soal', color: const Color(0xFFE65100), isDark: isDark),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildRuleBadge(icon: Icons.emoji_events_rounded, label: 'Skor Tertinggi: $_highScore', color: const Color(0xFF2E7D32)),
+                  _buildRuleBadge(icon: Icons.emoji_events_rounded, label: 'Skor Tertinggi: $_highScore', color: const Color(0xFF2E7D32), isDark: isDark),
                 ],
               ),
 
@@ -126,7 +132,7 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: isDark ? AppColors.primaryDarkTheme : AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -150,10 +156,10 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
               ),
 
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Setiap jawaban benar bernilai 10 poin',
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
                   fontSize: 12,
                 ),
               ),
@@ -164,13 +170,13 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
     );
   }
 
-  Widget _buildRuleBadge({required IconData icon, required String label, required Color color}) {
+  Widget _buildRuleBadge({required IconData icon, required String label, required Color color, required bool isDark}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity(isDark ? 0.22 : 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacity(0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

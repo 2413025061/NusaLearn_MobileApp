@@ -121,9 +121,10 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
     final totalLearned = learnedCulturesCount + learnedHeroesCount;
 
     final overallPercentage = totalMateri > 0 ? (totalLearned / totalMateri) : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Progres Belajar Nusantara'),
         leading: IconButton(
@@ -133,7 +134,10 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
         actions: [
           IconButton(
             tooltip: 'Reset Progres',
-            icon: const Icon(Icons.restart_alt_rounded, color: AppColors.primary),
+            icon: Icon(
+              Icons.restart_alt_rounded,
+              color: isDark ? AppColors.accent : AppColors.primary,
+            ),
             onPressed: _confirmResetProgress,
           ),
         ],
@@ -148,15 +152,18 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                   child: Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryLight],
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [const Color(0xFF520B08), const Color(0xFF330604)]
+                            : [AppColors.primary, AppColors.primaryLight],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
+                      border: isDark ? Border.all(color: AppColors.accent.withOpacity(0.3)) : null,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: isDark ? Colors.black45 : AppColors.primary.withOpacity(0.3),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -298,15 +305,17 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? AppColors.surfaceDark : Colors.white,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.black.withOpacity(0.06)),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.06),
+                    ),
                   ),
                   child: TabBar(
                     controller: _tabController,
-                    indicatorColor: AppColors.primary,
-                    labelColor: AppColors.primary,
-                    unselectedLabelColor: AppColors.textSecondary,
+                    indicatorColor: isDark ? AppColors.accent : AppColors.primary,
+                    labelColor: isDark ? AppColors.accent : AppColors.primary,
+                    unselectedLabelColor: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                     indicatorWeight: 3,
                     indicatorSize: TabBarIndicatorSize.tab,
                     tabs: [
@@ -323,8 +332,8 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildCulturesTab(),
-                      _buildHeroesTab(),
+                      _buildCulturesTab(isDark),
+                      _buildHeroesTab(isDark),
                     ],
                   ),
                 ),
@@ -333,7 +342,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
     );
   }
 
-  Widget _buildCulturesTab() {
+  Widget _buildCulturesTab(bool isDark) {
     final filtered = AppData.cultures.where((item) {
       if (_cultureFilter == 'Selesai') return _learnedCultures.contains(item.id);
       if (_cultureFilter == 'Belum') return !_learnedCultures.contains(item.id);
@@ -347,15 +356,15 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
             children: [
-              _buildFilterPill('Semua', 'Semua (${AppData.cultures.length})', _cultureFilter, (f) {
+              _buildFilterPill('Semua', 'Semua (${AppData.cultures.length})', _cultureFilter, isDark, (f) {
                 setState(() => _cultureFilter = f);
               }),
               const SizedBox(width: 8),
-              _buildFilterPill('Selesai', 'Selesai (${_learnedCultures.length})', _cultureFilter, (f) {
+              _buildFilterPill('Selesai', 'Selesai (${_learnedCultures.length})', _cultureFilter, isDark, (f) {
                 setState(() => _cultureFilter = f);
               }),
               const SizedBox(width: 8),
-              _buildFilterPill('Belum', 'Belum (${AppData.cultures.length - _learnedCultures.length})', _cultureFilter, (f) {
+              _buildFilterPill('Belum', 'Belum (${AppData.cultures.length - _learnedCultures.length})', _cultureFilter, isDark, (f) {
                 setState(() => _cultureFilter = f);
               }),
             ],
@@ -364,10 +373,13 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
 
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Tidak ada data pada filter ini',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                    style: TextStyle(
+                      color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+                      fontSize: 14,
+                    ),
                   ),
                 )
               : ListView.separated(
@@ -382,6 +394,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                       subtitle: 'Wilayah: ${item.region}',
                       imagePath: item.img,
                       isLearned: isLearned,
+                      isDark: isDark,
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -397,7 +410,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
     );
   }
 
-  Widget _buildHeroesTab() {
+  Widget _buildHeroesTab(bool isDark) {
     final filtered = AppData.heroes.where((item) {
       if (_heroFilter == 'Selesai') return _learnedHeroes.contains(item.id);
       if (_heroFilter == 'Belum') return !_learnedHeroes.contains(item.id);
@@ -411,15 +424,15 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
             children: [
-              _buildFilterPill('Semua', 'Semua (${AppData.heroes.length})', _heroFilter, (f) {
+              _buildFilterPill('Semua', 'Semua (${AppData.heroes.length})', _heroFilter, isDark, (f) {
                 setState(() => _heroFilter = f);
               }),
               const SizedBox(width: 8),
-              _buildFilterPill('Selesai', 'Selesai (${_learnedHeroes.length})', _heroFilter, (f) {
+              _buildFilterPill('Selesai', 'Selesai (${_learnedHeroes.length})', _heroFilter, isDark, (f) {
                 setState(() => _heroFilter = f);
               }),
               const SizedBox(width: 8),
-              _buildFilterPill('Belum', 'Belum (${AppData.heroes.length - _learnedHeroes.length})', _heroFilter, (f) {
+              _buildFilterPill('Belum', 'Belum (${AppData.heroes.length - _learnedHeroes.length})', _heroFilter, isDark, (f) {
                 setState(() => _heroFilter = f);
               }),
             ],
@@ -428,10 +441,13 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
 
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Tidak ada data pada filter ini',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                    style: TextStyle(
+                      color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+                      fontSize: 14,
+                    ),
                   ),
                 )
               : ListView.separated(
@@ -446,6 +462,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                       subtitle: item.region,
                       imagePath: item.img,
                       isLearned: isLearned,
+                      isDark: isDark,
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -461,7 +478,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
     );
   }
 
-  Widget _buildFilterPill(String key, String label, String currentKey, Function(String) onSelect) {
+  Widget _buildFilterPill(String key, String label, String currentKey, bool isDark, Function(String) onSelect) {
     final isSelected = key == currentKey;
     return Expanded(
       child: GestureDetector(
@@ -469,10 +486,14 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accent.withOpacity(0.25) : Colors.white,
+            color: isSelected
+                ? AppColors.accent.withOpacity(isDark ? 0.35 : 0.25)
+                : (isDark ? AppColors.surfaceDark : Colors.white),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColors.accent : Colors.black.withOpacity(0.08),
+              color: isSelected
+                  ? AppColors.accent
+                  : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
               width: isSelected ? 1.5 : 1,
             ),
           ),
@@ -482,7 +503,9 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
             style: TextStyle(
               fontSize: 11,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? AppColors.primaryDark : AppColors.textSecondary,
+              color: isSelected
+                  ? (isDark ? AppColors.accentLight : AppColors.primaryDark)
+                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
             ),
           ),
         ),
@@ -495,19 +518,22 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
     required String subtitle,
     required String imagePath,
     required bool isLearned,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.surfaceDark : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isLearned ? const Color(0xFF2E7D32).withOpacity(0.3) : Colors.black.withOpacity(0.05),
+          color: isLearned
+              ? const Color(0xFF2E7D32).withOpacity(0.5)
+              : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.05)),
           width: isLearned ? 1.2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -526,29 +552,32 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 color: AppColors.primary.withOpacity(0.1),
-                child: const Icon(Icons.image, color: AppColors.primary),
+                child: Icon(Icons.image, color: isDark ? AppColors.accent : AppColors.primary),
               ),
             ),
           ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted),
+          style: TextStyle(
+            fontSize: 11.5,
+            color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+          ),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: isLearned
-                ? const Color(0xFF2E7D32).withOpacity(0.12)
-                : Colors.orange.withOpacity(0.12),
+                ? const Color(0xFF2E7D32).withOpacity(0.2)
+                : Colors.orange.withOpacity(0.15),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isLearned ? const Color(0xFF2E7D32) : Colors.orange,
@@ -561,7 +590,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
               Icon(
                 isLearned ? Icons.check_circle_rounded : Icons.pending_rounded,
                 size: 13,
-                color: isLearned ? const Color(0xFF2E7D32) : Colors.orange[800],
+                color: isLearned ? const Color(0xFF4CAF50) : Colors.orange[400],
               ),
               const SizedBox(width: 4),
               Text(
@@ -569,7 +598,7 @@ class _LearningProgressScreenState extends State<LearningProgressScreen> with Si
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isLearned ? const Color(0xFF1B5E20) : Colors.orange[900],
+                  color: isLearned ? const Color(0xFF81C784) : Colors.orange[300],
                 ),
               ),
             ],

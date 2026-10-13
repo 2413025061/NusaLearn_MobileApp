@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../services/storage_service.dart';
+import '../services/theme_service.dart';
 import 'culture_list_screen.dart';
 import 'hero_list_screen.dart';
 import 'quiz_intro_screen.dart';
@@ -48,9 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
     const totalMateri = totalCultures + totalHeroes;
     final totalLearned = _learnedCultures + _learnedHeroes;
     final overallProgress = totalMateri > 0 ? (totalLearned / totalMateri) : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -60,23 +62,41 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 34,
               height: 34,
               errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.school_rounded, color: AppColors.primary),
+                  Icon(Icons.school_rounded, color: isDark ? AppColors.accent : AppColors.primary),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'NusaLearn',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 22,
-                color: AppColors.primary,
+                color: isDark ? AppColors.accent : AppColors.primary,
               ),
             ),
           ],
         ),
         actions: [
+          // Tombol Toggle Dark Mode
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: ThemeService.themeModeNotifier,
+            builder: (context, themeMode, _) {
+              final activeDark = themeMode == ThemeMode.dark;
+              return IconButton(
+                tooltip: activeDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap',
+                icon: Icon(
+                  activeDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  color: activeDark ? AppColors.accent : AppColors.primary,
+                ),
+                onPressed: () => ThemeService.toggleTheme(),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Progres Belajar',
-            icon: const Icon(Icons.insights_rounded, color: AppColors.primary),
+            icon: Icon(
+              Icons.insights_rounded,
+              color: isDark ? AppColors.accent : AppColors.primary,
+            ),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -87,7 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             tooltip: 'Tentang Aplikasi',
-            icon: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            icon: Icon(
+              Icons.info_outline_rounded,
+              color: isDark ? AppColors.accent : AppColors.primary,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -108,15 +131,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight],
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF520B08), const Color(0xFF330604)]
+                        : [AppColors.primary, AppColors.primaryLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
+                  border: isDark ? Border.all(color: AppColors.accent.withOpacity(0.3)) : null,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: isDark ? Colors.black45 : AppColors.primary.withOpacity(0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -202,12 +228,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: AppColors.accent.withOpacity(0.4), width: 1.2),
+                      border: Border.all(
+                        color: isDark ? AppColors.borderDark : AppColors.accent.withOpacity(0.4),
+                        width: 1.2,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.accent.withOpacity(0.14),
+                          color: isDark ? Colors.black38 : AppColors.accent.withOpacity(0.14),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -225,10 +254,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: AppColors.accent.withOpacity(0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.auto_stories_rounded, color: AppColors.primary, size: 20),
+                              child: Icon(
+                                Icons.auto_stories_rounded,
+                                color: isDark ? AppColors.accent : AppColors.primary,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 10),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -237,14 +270,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: isDark ? AppColors.accent : AppColors.primary,
                                     ),
                                   ),
                                   Text(
                                     'Pantau provinsi & pahlawan yang dibaca',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: AppColors.textSecondary,
+                                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -253,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: isDark ? AppColors.primaryLight : AppColors.primary,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -276,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: LinearProgressIndicator(
                             value: overallProgress,
                             minHeight: 8,
-                            backgroundColor: const Color(0xFFEADBDB),
+                            backgroundColor: isDark ? const Color(0xFF383030) : const Color(0xFFEADBDB),
                             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
                           ),
                         ),
@@ -290,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.background,
+                                  color: isDark ? AppColors.surfaceDarkMuted : AppColors.background,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
@@ -301,16 +334,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
+                                          Text(
                                             'Budaya Daerah',
-                                            style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary),
+                                            style: TextStyle(
+                                              fontSize: 10.5,
+                                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                                            ),
                                           ),
                                           Text(
                                             '$_learnedCultures / $totalCultures Provinsi',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
+                                              color: isDark ? AppColors.accentLight : AppColors.primary,
                                             ),
                                           ),
                                         ],
@@ -325,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.background,
+                                  color: isDark ? AppColors.surfaceDarkMuted : AppColors.background,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
@@ -336,16 +372,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
+                                          Text(
                                             'Pahlawan',
-                                            style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary),
+                                            style: TextStyle(
+                                              fontSize: 10.5,
+                                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                                            ),
                                           ),
                                           Text(
                                             '$_learnedHeroes / $totalHeroes Tokoh',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
+                                              color: isDark ? AppColors.accentLight : AppColors.primary,
                                             ),
                                           ),
                                         ],
@@ -361,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 10),
 
                         // Link Buka Detail
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
@@ -369,11 +408,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+                                color: isDark ? AppColors.accent : AppColors.primary,
                               ),
                             ),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 14,
+                              color: isDark ? AppColors.accent : AppColors.primary,
+                            ),
                           ],
                         ),
                       ],
@@ -384,12 +427,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 24),
 
-              const Text(
+              Text(
                 'Menu Pembelajaran',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 14),
@@ -409,6 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: '38 Provinsi Lengkap',
                     iconEmoji: '🎭',
                     accentColor: const Color(0xFFE65100),
+                    isDark: isDark,
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -423,6 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: '38 Tokoh Pejuang',
                     iconEmoji: '🦸‍♂️',
                     accentColor: const Color(0xFF1565C0),
+                    isDark: isDark,
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -437,6 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: 'Uji Pengetahuanmu',
                     iconEmoji: '🎮',
                     accentColor: const Color(0xFF2E7D32),
+                    isDark: isDark,
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -451,6 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: 'Info & Profil',
                     iconEmoji: 'ℹ️',
                     accentColor: const Color(0xFF6A1B9A),
+                    isDark: isDark,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -473,6 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String subtitle,
     required String iconEmoji,
     required Color accentColor,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -482,17 +530,17 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? AppColors.surfaceDark : Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: isDark ? Colors.black38 : Colors.black.withOpacity(0.06),
                 blurRadius: 15,
                 offset: const Offset(0, 6),
               ),
             ],
             border: Border.all(
-              color: Colors.black.withOpacity(0.04),
+              color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.04),
             ),
           ),
           padding: const EdgeInsets.all(16),
@@ -503,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.12),
+                  color: accentColor.withOpacity(isDark ? 0.22 : 0.12),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
@@ -516,19 +564,19 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: isDark ? AppColors.accent : AppColors.primary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                 ),
               ),
             ],

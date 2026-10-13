@@ -64,9 +64,10 @@ class _HeroListScreenState extends State<HeroListScreen> {
     final totalCount = AppData.heroes.length;
     final learnedCount = _learnedIds.length;
     final progressPercent = totalCount > 0 ? (learnedCount / totalCount) : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Pahlawan Nasional'),
         leading: IconButton(
@@ -81,12 +82,14 @@ class _HeroListScreenState extends State<HeroListScreen> {
             margin: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.surfaceDark : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black.withOpacity(0.05)),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.05),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -99,24 +102,28 @@ class _HeroListScreenState extends State<HeroListScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.military_tech_rounded, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.military_tech_rounded,
+                          color: isDark ? AppColors.accent : AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Progres Pahlawan:',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                           ),
                         ),
                       ],
                     ),
                     Text(
                       '$learnedCount dari $totalCount Tokoh (${(progressPercent * 100).toStringAsFixed(0)}%)',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: isDark ? AppColors.accent : AppColors.primary,
                       ),
                     ),
                   ],
@@ -127,8 +134,8 @@ class _HeroListScreenState extends State<HeroListScreen> {
                   child: LinearProgressIndicator(
                     value: progressPercent,
                     minHeight: 6,
-                    backgroundColor: const Color(0xFFEADBDB),
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    backgroundColor: isDark ? const Color(0xFF383030) : const Color(0xFFEADBDB),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
                   ),
                 ),
               ],
@@ -145,10 +152,19 @@ class _HeroListScreenState extends State<HeroListScreen> {
                   _searchQuery = val;
                 });
               },
+              style: TextStyle(
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: 'Cari nama pahlawan atau asal daerah...',
-                hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                hintStyle: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: isDark ? AppColors.accent : AppColors.primary,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.close_rounded, size: 20),
@@ -161,19 +177,26 @@ class _HeroListScreenState extends State<HeroListScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: isDark ? AppColors.surfaceDark : Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.black.withOpacity(0.06)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.06),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.accent : AppColors.primary,
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -184,11 +207,11 @@ class _HeroListScreenState extends State<HeroListScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             child: Row(
               children: [
-                _buildStatusFilterChip('Semua', 'Semua ($totalCount)'),
+                _buildStatusFilterChip('Semua', 'Semua ($totalCount)', isDark),
                 const SizedBox(width: 8),
-                _buildStatusFilterChip('Selesai', 'Selesai ($learnedCount)'),
+                _buildStatusFilterChip('Selesai', 'Selesai ($learnedCount)', isDark),
                 const SizedBox(width: 8),
-                _buildStatusFilterChip('Belum', 'Belum (${totalCount - learnedCount})'),
+                _buildStatusFilterChip('Belum', 'Belum (${totalCount - learnedCount})', isDark),
               ],
             ),
           ),
@@ -215,18 +238,22 @@ class _HeroListScreenState extends State<HeroListScreen> {
                         _selectedRegion = region;
                       });
                     },
-                    selectedColor: AppColors.primary,
+                    selectedColor: isDark ? AppColors.primaryLight : AppColors.primary,
                     checkmarkColor: Colors.white,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
                       fontSize: 11.5,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
-                    backgroundColor: Colors.white,
+                    backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
-                        color: isSelected ? AppColors.primary : Colors.black.withOpacity(0.08),
+                        color: isSelected
+                            ? (isDark ? AppColors.accent : AppColors.primary)
+                            : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
@@ -245,10 +272,10 @@ class _HeroListScreenState extends State<HeroListScreen> {
               children: [
                 Text(
                   'Menampilkan ${items.length} pahlawan',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -262,14 +289,18 @@ class _HeroListScreenState extends State<HeroListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.search_off_rounded, size: 64, color: AppColors.textMuted),
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 64,
+                          color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+                        ),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           'Data pahlawan tidak ditemukan',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -287,7 +318,7 @@ class _HeroListScreenState extends State<HeroListScreen> {
                     itemBuilder: (context, index) {
                       final item = items[index];
                       final isLearned = _learnedIds.contains(item.id);
-                      return _buildHeroCard(context, item, isLearned);
+                      return _buildHeroCard(context, item, isLearned, isDark);
                     },
                   ),
           ),
@@ -296,7 +327,7 @@ class _HeroListScreenState extends State<HeroListScreen> {
     );
   }
 
-  Widget _buildStatusFilterChip(String filterKey, String label) {
+  Widget _buildStatusFilterChip(String filterKey, String label, bool isDark) {
     final isSelected = _statusFilter == filterKey;
     return Expanded(
       child: GestureDetector(
@@ -308,10 +339,14 @@ class _HeroListScreenState extends State<HeroListScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accent.withOpacity(0.25) : Colors.white,
+            color: isSelected
+                ? AppColors.accent.withOpacity(isDark ? 0.35 : 0.25)
+                : (isDark ? AppColors.surfaceDark : Colors.white),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? AppColors.accent : Colors.black.withOpacity(0.08),
+              color: isSelected
+                  ? AppColors.accent
+                  : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
               width: isSelected ? 1.5 : 1,
             ),
           ),
@@ -321,7 +356,9 @@ class _HeroListScreenState extends State<HeroListScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? AppColors.primaryDark : AppColors.textSecondary,
+              color: isSelected
+                  ? (isDark ? AppColors.accentLight : AppColors.primaryDark)
+                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
             ),
           ),
         ),
@@ -329,7 +366,7 @@ class _HeroListScreenState extends State<HeroListScreen> {
     );
   }
 
-  Widget _buildHeroCard(BuildContext context, HeroItem item, bool isLearned) {
+  Widget _buildHeroCard(BuildContext context, HeroItem item, bool isLearned, bool isDark) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -345,19 +382,19 @@ class _HeroListScreenState extends State<HeroListScreen> {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? AppColors.surfaceDark : Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: isDark ? Colors.black38 : Colors.black.withOpacity(0.06),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
             border: Border.all(
               color: isLearned
-                  ? const Color(0xFF2E7D32).withOpacity(0.4)
-                  : Colors.black.withOpacity(0.04),
+                  ? const Color(0xFF2E7D32).withOpacity(0.6)
+                  : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.04)),
               width: isLearned ? 1.5 : 1,
             ),
           ),
@@ -376,7 +413,10 @@ class _HeroListScreenState extends State<HeroListScreen> {
                         alignment: Alignment.topCenter,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: AppColors.primary.withOpacity(0.1),
-                          child: const Icon(Icons.person, color: AppColors.textMuted),
+                          child: Icon(
+                            Icons.person,
+                            color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
+                          ),
                         ),
                       ),
                     ),
@@ -390,18 +430,18 @@ class _HeroListScreenState extends State<HeroListScreen> {
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: isDark ? AppColors.accent : AppColors.primary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           item.region,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: AppColors.textMuted,
+                            color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
                           ),
                         ),
                       ],

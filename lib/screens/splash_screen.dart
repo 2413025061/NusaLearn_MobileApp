@@ -151,20 +151,28 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFF9F5),
-              AppColors.background,
-              Color(0xFFFFF0E8),
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF1E1717),
+                    AppColors.backgroundDark,
+                    const Color(0xFF120E0E),
+                  ]
+                : [
+                    const Color(0xFFFFF9F5),
+                    AppColors.background,
+                    const Color(0xFFFFF0E8),
+                  ],
           ),
         ),
         child: SafeArea(
@@ -193,8 +201,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               borderRadius: BorderRadius.circular(70),
                               gradient: RadialGradient(
                                 colors: [
-                                  AppColors.accent.withOpacity(0.22),
-                                  AppColors.primary.withOpacity(0.08),
+                                  AppColors.accent.withOpacity(isDark ? 0.28 : 0.22),
+                                  AppColors.primary.withOpacity(isDark ? 0.15 : 0.08),
                                   Colors.transparent,
                                 ],
                                 stops: const [0.2, 0.65, 1.0],
@@ -220,11 +228,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 vertical: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.88),
+                                color: isDark
+                                    ? AppColors.surfaceDark.withOpacity(0.92)
+                                    : Colors.white.withOpacity(0.88),
                                 borderRadius: BorderRadius.circular(28),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withOpacity(0.14),
+                                    color: isDark ? Colors.black45 : AppColors.primary.withOpacity(0.14),
                                     blurRadius: 36,
                                     offset: const Offset(0, 14),
                                   ),
@@ -235,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: AppColors.accent.withOpacity(0.40),
+                                  color: AppColors.accent.withOpacity(isDark ? 0.55 : 0.40),
                                   width: 1.5,
                                 ),
                               ),
@@ -254,10 +264,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                       color: AppColors.primary.withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.school_rounded,
                                       size: 80,
-                                      color: AppColors.primary,
+                                      color: isDark ? AppColors.accent : AppColors.primary,
                                     ),
                                   ),
                                 ),
@@ -288,11 +298,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               style: GoogleFonts.poppins(
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
+                                color: isDark ? AppColors.accent : AppColors.primary,
                                 letterSpacing: 1.5,
                                 shadows: [
                                   Shadow(
-                                    color: AppColors.primary.withOpacity(0.18),
+                                    color: (isDark ? Colors.black87 : AppColors.primary).withOpacity(0.2),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
@@ -324,26 +334,26 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.accent.withOpacity(0.18),
+                                color: AppColors.accent.withOpacity(isDark ? 0.25 : 0.18),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: AppColors.accent.withOpacity(0.45),
+                                  color: AppColors.accent.withOpacity(isDark ? 0.55 : 0.45),
                                   width: 1,
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.auto_awesome,
                                     size: 15,
-                                    color: AppColors.primaryDark,
+                                    color: isDark ? AppColors.accentLight : AppColors.primaryDark,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Eksplorasi Budaya & Pahlawan Indonesia',
                                     style: GoogleFonts.poppins(
-                                      color: AppColors.primaryDark,
+                                      color: isDark ? AppColors.accentLight : AppColors.primaryDark,
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.3,
@@ -373,7 +383,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           child: ElevatedButton(
                             onPressed: _navigateToHome,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: isDark ? AppColors.primaryDarkTheme : AppColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -403,7 +413,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         Text(
                           'Media Pembelajaran Interaktif Mobile',
                           style: GoogleFonts.poppins(
-                            color: AppColors.textMuted,
+                            color: isDark ? AppColors.textMutedDark : AppColors.textMuted,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),

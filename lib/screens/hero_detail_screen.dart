@@ -22,7 +22,6 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
   }
 
   Future<void> _markAndCheckLearned() async {
-    // Otomatis tandai sebagai sudah dipelajari
     await StorageService.markHeroAsLearned(widget.item.id);
     if (mounted) {
       setState(() {
@@ -56,16 +55,17 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // Sliver App Bar with Hero Image
           SliverAppBar(
             expandedHeight: 280.0,
             pinned: true,
-            backgroundColor: AppColors.primary,
+            backgroundColor: isDark ? AppColors.backgroundDark : AppColors.primary,
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
@@ -150,12 +150,14 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black.withOpacity(0.05)),
+                      border: Border.all(
+                        color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.05),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -169,10 +171,16 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
+                                color: isDark
+                                    ? AppColors.accent.withOpacity(0.18)
+                                    : AppColors.primary.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.military_tech_rounded, color: AppColors.primary, size: 24),
+                              child: Icon(
+                                Icons.military_tech_rounded,
+                                color: isDark ? AppColors.accent : AppColors.primary,
+                                size: 24,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -190,10 +198,10 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     item.info,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
+                                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -202,7 +210,10 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        const Divider(height: 1),
+                        Divider(
+                          height: 1,
+                          color: isDark ? AppColors.borderDark : Colors.grey[200],
+                        ),
                         const SizedBox(height: 10),
                         // Status Progres Belajar Pill
                         InkWell(
@@ -212,7 +223,7 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: _isLearned
-                                  ? const Color(0xFF2E7D32).withOpacity(0.15)
+                                  ? const Color(0xFF2E7D32).withOpacity(isDark ? 0.3 : 0.15)
                                   : Colors.grey.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
@@ -228,15 +239,17 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                                       ? Icons.check_circle_rounded
                                       : Icons.radio_button_unchecked_rounded,
                                   size: 15,
-                                  color: _isLearned ? const Color(0xFF2E7D32) : Colors.grey[700],
+                                  color: _isLearned
+                                      ? (isDark ? const Color(0xFF81C784) : const Color(0xFF2E7D32))
+                                      : (isDark ? Colors.grey[400] : Colors.grey[700]),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   _isLearned ? 'Selesai Dipelajari' : 'Belum Dipelajari (Ketuk untuk menandai)',
                                   style: TextStyle(
                                     color: _isLearned
-                                        ? const Color(0xFF1B5E20)
-                                        : Colors.grey[800],
+                                        ? (isDark ? const Color(0xFFA5D6A7) : const Color(0xFF1B5E20))
+                                        : (isDark ? Colors.grey[300] : Colors.grey[800]),
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -252,28 +265,30 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                   const SizedBox(height: 20),
 
                   // Peran Penting / Perjuangan
-                  const Text(
+                  Text(
                     'Peran Penting & Perjuangan',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: isDark ? AppColors.accent : AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black.withOpacity(0.04)),
+                      border: Border.all(
+                        color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.04),
+                      ),
                     ),
                     child: Text(
                       item.desc,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         height: 1.7,
-                        color: AppColors.textPrimary,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -285,15 +300,20 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          AppColors.accent.withOpacity(0.2),
-                          AppColors.accentLight.withOpacity(0.3),
-                        ],
+                        colors: isDark
+                            ? [
+                                AppColors.accent.withOpacity(0.18),
+                                AppColors.accentLight.withOpacity(0.08),
+                              ]
+                            : [
+                                AppColors.accent.withOpacity(0.2),
+                                AppColors.accentLight.withOpacity(0.3),
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.accent.withOpacity(0.6)),
+                      border: Border.all(color: AppColors.accent.withOpacity(0.5)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,22 +331,22 @@ class _HeroDetailScreenState extends State<HeroDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Fakta Menarik:',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryDark,
+                                  color: isDark ? AppColors.accentLight : AppColors.primaryDark,
                                 ),
                               ),
                               const SizedBox(height: 6),
                               Text(
                                 item.fakta,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   height: 1.6,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textPrimary,
+                                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimary,
                                 ),
                               ),
                             ],
