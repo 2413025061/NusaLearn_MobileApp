@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../services/storage_service.dart';
+import '../services/sound_service.dart';
 import 'quiz_play_screen.dart';
 
 class QuizIntroScreen extends StatefulWidget {
@@ -126,6 +127,7 @@ class _QuizIntroScreenState extends State<QuizIntroScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    SoundService.playClick();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const QuizPlayScreen()),

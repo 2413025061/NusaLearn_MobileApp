@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../constants/app_colors.dart';
 import '../models/quiz_model.dart';
+import '../services/sound_service.dart';
 import 'home_screen.dart';
 import 'quiz_play_screen.dart';
 
@@ -24,10 +25,13 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
     if (widget.result.score >= 70) {
       _confettiController.play();
     }
+    // Bunyikan sound effect berdasarkan hasil skor kuis
+    SoundService.playQuizResult(widget.result.score);
   }
 
   @override
   void dispose() {
+    SoundService.stopResultSound();
     _confettiController.dispose();
     super.dispose();
   }
@@ -167,6 +171,8 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
+                          SoundService.stopResultSound();
+                          SoundService.playClick();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => const QuizPlayScreen()),
@@ -201,6 +207,8 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                       width: double.infinity,
                       child: OutlinedButton(
                         onPressed: () {
+                          SoundService.stopResultSound();
+                          SoundService.playClick();
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(builder: (context) => const HomeScreen()),

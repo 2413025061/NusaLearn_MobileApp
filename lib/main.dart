@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_theme.dart';
 import 'services/theme_service.dart';
+import 'services/sound_service.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -10,6 +11,7 @@ void main() async {
   
   // Inisialisasi tema tersimpan (Light / Dark)
   await ThemeService.init();
+  await SoundService.init();
 
   runApp(const NusaLearnApp());
 }

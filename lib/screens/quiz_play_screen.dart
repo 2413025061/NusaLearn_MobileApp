@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../data/app_data.dart';
 import '../models/quiz_model.dart';
 import '../services/storage_service.dart';
+import '../services/sound_service.dart';
 import 'quiz_result_screen.dart';
 
 class QuizPlayScreen extends StatefulWidget {
@@ -70,6 +71,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
 
   void _onAnswerSubmitted(int optionIndex) {
     if (_isAnswerChecked) return;
+    SoundService.playClick();
     _timer?.cancel();
 
     final currentQ = _sessionQuestions[_currentIndex];
@@ -160,6 +162,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    SoundService.playClick();
                     Navigator.pop(context);
                     _goToNextQuestion();
                   },
