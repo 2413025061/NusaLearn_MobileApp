@@ -4,6 +4,7 @@ import '../data/app_data.dart';
 import '../models/culture_model.dart';
 import '../services/storage_service.dart';
 import 'culture_detail_screen.dart';
+import 'indonesia_map_screen.dart';
 
 class CultureListScreen extends StatefulWidget {
   const CultureListScreen({super.key});
@@ -73,6 +74,19 @@ class _CultureListScreenState extends State<CultureListScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_rounded),
+            tooltip: 'Peta Budaya Digital',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const IndonesiaMapScreen()),
+              );
+              _loadProgress();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

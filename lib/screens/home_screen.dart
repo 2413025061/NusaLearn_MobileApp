@@ -7,6 +7,7 @@ import 'hero_list_screen.dart';
 import 'quiz_intro_screen.dart';
 import 'about_screen.dart';
 import 'learning_progress_screen.dart';
+import 'indonesia_map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -420,6 +421,108 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Banner Peta Budaya Digital Nusantara Interaktif
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF132F4C), const Color(0xFF0A1929)]
+                        : [const Color(0xFF0D47A1), const Color(0xFF1976D2)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark ? Colors.black54 : const Color(0xFF1976D2)).withOpacity(0.28),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const IndonesiaMapScreen()),
+                      );
+                      _loadStats();
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.18),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white30, width: 1.5),
+                            ),
+                            child: const Center(
+                              child: Text('🗺️', style: TextStyle(fontSize: 26)),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Peta Budaya Digital',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'Interaktif',
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Ketuk pulau & provinsi di peta untuk langsung melihat kebudayaannya.',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
+                        ],
+                      ),
                     ),
                   ),
                 ),
