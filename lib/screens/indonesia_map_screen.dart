@@ -29,65 +29,74 @@ class IndonesiaMapScreen extends StatefulWidget {
   State<IndonesiaMapScreen> createState() => _IndonesiaMapScreenState();
 }
 
-class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTickerProviderStateMixin {
+class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with TickerProviderStateMixin {
   final TransformationController _transformController = TransformationController();
   late AnimationController _pulseController;
+  Animation<Matrix4>? _mapAnimation;
+  AnimationController? _animController;
   
   String _selectedRegion = 'Semua';
   CultureItem? _selectedCulture;
   Set<String> _learnedIds = {};
+  Size _viewportSize = Size.zero;
+  bool _hasInitialFitted = false;
 
-  // 38 Titik Koordinat Provinsi Indonesia (Skala Canvas 1050 x 560)
+  // Dimensi Kanvas Peta Indonesia (1400 x 700, rasio 2:1 — proporsional untuk layar mobile)
+  static const double mapWidth = 1400.0;
+  static const double mapHeight = 700.0;
+
+  // 38 Titik Koordinat Presisi Geografis Provinsi Indonesia
+  // Dikalibrasi ulang berdasarkan citra peta 1400 x 700 piksel
   static const List<ProvinceGeoPoint> _provincePoints = [
     // Sumatera
-    ProvinceGeoPoint(id: 'aceh', name: 'Aceh', region: 'Sumatera', x: 95, y: 105),
-    ProvinceGeoPoint(id: 'sumut', name: 'Sumatera Utara', region: 'Sumatera', x: 135, y: 155),
-    ProvinceGeoPoint(id: 'sumbar', name: 'Sumatera Barat', region: 'Sumatera', x: 165, y: 235),
-    ProvinceGeoPoint(id: 'riau', name: 'Riau', region: 'Sumatera', x: 205, y: 205),
-    ProvinceGeoPoint(id: 'kepri', name: 'Kep. Riau', region: 'Sumatera', x: 260, y: 175),
-    ProvinceGeoPoint(id: 'jambi', name: 'Jambi', region: 'Sumatera', x: 220, y: 260),
-    ProvinceGeoPoint(id: 'bengkulu', name: 'Bengkulu', region: 'Sumatera', x: 195, y: 310),
-    ProvinceGeoPoint(id: 'sumsel', name: 'Sumatera Selatan', region: 'Sumatera', x: 250, y: 310),
-    ProvinceGeoPoint(id: 'babel', name: 'Bangka Belitung', region: 'Sumatera', x: 300, y: 275),
-    ProvinceGeoPoint(id: 'lampung', name: 'Lampung', region: 'Sumatera', x: 270, y: 360),
+    ProvinceGeoPoint(id: 'aceh', name: 'Aceh', region: 'Sumatera', x: 121, y: 157),
+    ProvinceGeoPoint(id: 'sumut', name: 'Sumatera Utara', region: 'Sumatera', x: 176, y: 208),
+    ProvinceGeoPoint(id: 'sumbar', name: 'Sumatera Barat', region: 'Sumatera', x: 224, y: 287),
+    ProvinceGeoPoint(id: 'riau', name: 'Riau', region: 'Sumatera', x: 264, y: 263),
+    ProvinceGeoPoint(id: 'kepri', name: 'Kep. Riau', region: 'Sumatera', x: 334, y: 254),
+    ProvinceGeoPoint(id: 'jambi', name: 'Jambi', region: 'Sumatera', x: 272, y: 326),
+    ProvinceGeoPoint(id: 'bengkulu', name: 'Bengkulu', region: 'Sumatera', x: 275, y: 368),
+    ProvinceGeoPoint(id: 'sumsel', name: 'Sumatera Selatan', region: 'Sumatera', x: 319, y: 376),
+    ProvinceGeoPoint(id: 'babel', name: 'Bangka Belitung', region: 'Sumatera', x: 360, y: 362),
+    ProvinceGeoPoint(id: 'lampung', name: 'Lampung', region: 'Sumatera', x: 350, y: 428),
 
     // Jawa
-    ProvinceGeoPoint(id: 'banten', name: 'Banten', region: 'Jawa', x: 315, y: 415),
-    ProvinceGeoPoint(id: 'jakarta', name: 'DKI Jakarta', region: 'Jawa', x: 345, y: 410),
-    ProvinceGeoPoint(id: 'jabar', name: 'Jawa Barat', region: 'Jawa', x: 365, y: 430),
-    ProvinceGeoPoint(id: 'jateng', name: 'Jawa Tengah', region: 'Jawa', x: 420, y: 435),
-    ProvinceGeoPoint(id: 'jogja', name: 'D.I. Yogyakarta', region: 'Jawa', x: 425, y: 458),
-    ProvinceGeoPoint(id: 'jatim', name: 'Jawa Timur', region: 'Jawa', x: 485, y: 440),
+    ProvinceGeoPoint(id: 'banten', name: 'Banten', region: 'Jawa', x: 418, y: 484),
+    ProvinceGeoPoint(id: 'jakarta', name: 'DKI Jakarta', region: 'Jawa', x: 446, y: 479),
+    ProvinceGeoPoint(id: 'jabar', name: 'Jawa Barat', region: 'Jawa', x: 493, y: 497),
+    ProvinceGeoPoint(id: 'jateng', name: 'Jawa Tengah', region: 'Jawa', x: 525, y: 476),
+    ProvinceGeoPoint(id: 'jogja', name: 'D.I. Yogyakarta', region: 'Jawa', x: 527, y: 495),
+    ProvinceGeoPoint(id: 'jatim', name: 'Jawa Timur', region: 'Jawa', x: 597, y: 507),
 
     // Kalimantan
-    ProvinceGeoPoint(id: 'kalbar', name: 'Kalimantan Barat', region: 'Kalimantan', x: 385, y: 245),
-    ProvinceGeoPoint(id: 'kalteng', name: 'Kalimantan Tengah', region: 'Kalimantan', x: 445, y: 265),
-    ProvinceGeoPoint(id: 'kalsel', name: 'Kalimantan Selatan', region: 'Kalimantan', x: 495, y: 305),
-    ProvinceGeoPoint(id: 'kaltim', name: 'Kalimantan Timur', region: 'Kalimantan', x: 505, y: 220),
-    ProvinceGeoPoint(id: 'kaltara', name: 'Kalimantan Utara', region: 'Kalimantan', x: 510, y: 145),
+    ProvinceGeoPoint(id: 'kalbar', name: 'Kalimantan Barat', region: 'Kalimantan', x: 514, y: 309),
+    ProvinceGeoPoint(id: 'kalteng', name: 'Kalimantan Tengah', region: 'Kalimantan', x: 574, y: 335),
+    ProvinceGeoPoint(id: 'kalsel', name: 'Kalimantan Selatan', region: 'Kalimantan', x: 618, y: 367),
+    ProvinceGeoPoint(id: 'kaltim', name: 'Kalimantan Timur', region: 'Kalimantan', x: 631, y: 287),
+    ProvinceGeoPoint(id: 'kaltara', name: 'Kalimantan Utara', region: 'Kalimantan', x: 641, y: 225),
 
     // Sulawesi
-    ProvinceGeoPoint(id: 'sulut', name: 'Sulawesi Utara', region: 'Sulawesi', x: 675, y: 150),
-    ProvinceGeoPoint(id: 'gorontalo', name: 'Gorontalo', region: 'Sulawesi', x: 640, y: 165),
-    ProvinceGeoPoint(id: 'sulteng', name: 'Sulawesi Tengah', region: 'Sulawesi', x: 620, y: 225),
-    ProvinceGeoPoint(id: 'sulbar', name: 'Sulawesi Barat', region: 'Sulawesi', x: 595, y: 265),
-    ProvinceGeoPoint(id: 'sulsel', name: 'Sulawesi Selatan', region: 'Sulawesi', x: 605, y: 330),
-    ProvinceGeoPoint(id: 'sultra', name: 'Sulawesi Tenggara', region: 'Sulawesi', x: 660, y: 315),
+    ProvinceGeoPoint(id: 'sulut', name: 'Sulawesi Utara', region: 'Sulawesi', x: 890, y: 241),
+    ProvinceGeoPoint(id: 'gorontalo', name: 'Gorontalo', region: 'Sulawesi', x: 829, y: 263),
+    ProvinceGeoPoint(id: 'sulteng', name: 'Sulawesi Tengah', region: 'Sulawesi', x: 794, y: 312),
+    ProvinceGeoPoint(id: 'sulbar', name: 'Sulawesi Barat', region: 'Sulawesi', x: 762, y: 340),
+    ProvinceGeoPoint(id: 'sulsel', name: 'Sulawesi Selatan', region: 'Sulawesi', x: 765, y: 390),
+    ProvinceGeoPoint(id: 'sultra', name: 'Sulawesi Tenggara', region: 'Sulawesi', x: 821, y: 399),
 
     // Bali & Nusa Tenggara
-    ProvinceGeoPoint(id: 'bali', name: 'Bali', region: 'Bali & Nusa Tenggara', x: 545, y: 460),
-    ProvinceGeoPoint(id: 'ntb', name: 'NTB', region: 'Bali & Nusa Tenggara', x: 595, y: 465),
-    ProvinceGeoPoint(id: 'ntt', name: 'NTT', region: 'Bali & Nusa Tenggara', x: 675, y: 470),
+    ProvinceGeoPoint(id: 'bali', name: 'Bali', region: 'Bali & Nusa Tenggara', x: 673, y: 519),
+    ProvinceGeoPoint(id: 'ntb', name: 'NTB', region: 'Bali & Nusa Tenggara', x: 715, y: 514),
+    ProvinceGeoPoint(id: 'ntt', name: 'NTT', region: 'Bali & Nusa Tenggara', x: 802, y: 519),
 
     // Maluku & Papua
-    ProvinceGeoPoint(id: 'malut', name: 'Maluku Utara', region: 'Maluku & Papua', x: 745, y: 195),
-    ProvinceGeoPoint(id: 'maluku', name: 'Maluku', region: 'Maluku & Papua', x: 775, y: 295),
-    ProvinceGeoPoint(id: 'papuabaratdaya', name: 'Papua Barat Daya', region: 'Maluku & Papua', x: 825, y: 225),
-    ProvinceGeoPoint(id: 'papuabarat', name: 'Papua Barat', region: 'Maluku & Papua', x: 855, y: 260),
-    ProvinceGeoPoint(id: 'papuatengah', name: 'Papua Tengah', region: 'Maluku & Papua', x: 895, y: 285),
-    ProvinceGeoPoint(id: 'papuapegunungan', name: 'Papua Pegunungan', region: 'Maluku & Papua', x: 935, y: 290),
-    ProvinceGeoPoint(id: 'papua', name: 'Papua', region: 'Maluku & Papua', x: 945, y: 240),
-    ProvinceGeoPoint(id: 'papuaselatan', name: 'Papua Selatan', region: 'Maluku & Papua', x: 955, y: 350),
+    ProvinceGeoPoint(id: 'malut', name: 'Maluku Utara', region: 'Maluku & Papua', x: 966, y: 266),
+    ProvinceGeoPoint(id: 'maluku', name: 'Maluku', region: 'Maluku & Papua', x: 994, y: 368),
+    ProvinceGeoPoint(id: 'papuabaratdaya', name: 'Papua Barat Daya', region: 'Maluku & Papua', x: 1067, y: 307),
+    ProvinceGeoPoint(id: 'papuabarat', name: 'Papua Barat', region: 'Maluku & Papua', x: 1107, y: 330),
+    ProvinceGeoPoint(id: 'papuatengah', name: 'Papua Tengah', region: 'Maluku & Papua', x: 1150, y: 371),
+    ProvinceGeoPoint(id: 'papuapegunungan', name: 'Papua Pegunungan', region: 'Maluku & Papua', x: 1210, y: 377),
+    ProvinceGeoPoint(id: 'papua', name: 'Papua', region: 'Maluku & Papua', x: 1231, y: 337),
+    ProvinceGeoPoint(id: 'papuaselatan', name: 'Papua Selatan', region: 'Maluku & Papua', x: 1283, y: 452),
   ];
 
   static const List<String> _regions = [
@@ -116,7 +125,6 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
     if (mounted) {
       setState(() {
         _learnedIds = learned;
-        // Default seleksi pertama ke Aceh jika belum ada
         if (_selectedCulture == null && AppData.cultures.isNotEmpty) {
           _selectedCulture = AppData.cultures.first;
         }
@@ -126,9 +134,108 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
 
   @override
   void dispose() {
-    _transformController.dispose();
+    _animController?.dispose();
     _pulseController.dispose();
+    _transformController.dispose();
     super.dispose();
+  }
+
+  /// Menghitung matriks pas layar penuh Indonesia
+  Matrix4 _getFittedMatrix(Size viewport) {
+    if (viewport.width <= 0 || viewport.height <= 0) {
+      return Matrix4.identity();
+    }
+    // Skala agar seluruh lebar peta pas di viewport
+    final double scaleX = viewport.width / mapWidth;
+    final double scaleY = viewport.height / mapHeight;
+    final double scale = scaleX < scaleY ? scaleX : scaleY;
+
+    final double scaledW = mapWidth * scale;
+    final double scaledH = mapHeight * scale;
+
+    // Pusatkan peta di viewport
+    final double dx = (viewport.width - scaledW) / 2;
+    final double dy = (viewport.height - scaledH) / 2;
+
+    final matrix = Matrix4.identity();
+    matrix.translate(dx, dy);
+    matrix.scale(scale);
+    return matrix;
+  }
+
+  /// Menghitung matriks fokus pulau
+  Matrix4 _getRegionMatrix(String region, Size viewport) {
+    if (region == 'Semua') {
+      return _getFittedMatrix(viewport);
+    }
+
+    double targetX = 700;
+    double targetY = 350;
+    double zoomScale = 1.0;
+
+    switch (region) {
+      case 'Sumatera':
+        targetX = 250;
+        targetY = 295;
+        zoomScale = 1.8;
+        break;
+      case 'Jawa':
+        targetX = 520;
+        targetY = 492;
+        zoomScale = 2.4;
+        break;
+      case 'Kalimantan':
+        targetX = 590;
+        targetY = 305;
+        zoomScale = 1.9;
+        break;
+      case 'Sulawesi':
+        targetX = 810;
+        targetY = 330;
+        zoomScale = 2.0;
+        break;
+      case 'Bali & Nusa Tenggara':
+        targetX = 750;
+        targetY = 524;
+        zoomScale = 2.4;
+        break;
+      case 'Maluku & Papua':
+        targetX = 1120;
+        targetY = 360;
+        zoomScale = 1.7;
+        break;
+    }
+
+    // Hitung skala dasar (fitted) lalu kalikan multiplier
+    final double fitScale = (viewport.width / mapWidth) < (viewport.height / mapHeight)
+        ? (viewport.width / mapWidth)
+        : (viewport.height / mapHeight);
+    final double finalScale = fitScale * zoomScale;
+
+    final double tx = (viewport.width / 2) - (targetX * finalScale);
+    final double ty = (viewport.height * 0.40) - (targetY * finalScale);
+
+    final matrix = Matrix4.identity();
+    matrix.translate(tx, ty);
+    matrix.scale(finalScale);
+    return matrix;
+  }
+
+  void _animateToMatrix(Matrix4 targetMatrix) {
+    _animController?.dispose();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    final startMatrix = _transformController.value;
+    _mapAnimation = Matrix4Tween(begin: startMatrix, end: targetMatrix).animate(
+      CurvedAnimation(parent: _animController!, curve: Curves.easeOutCubic),
+    )..addListener(() {
+        _transformController.value = _mapAnimation!.value;
+      });
+
+    _animController!.forward();
   }
 
   void _onRegionChanged(String region) {
@@ -137,35 +244,12 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
       _selectedRegion = region;
     });
 
-    // Auto zoom & pan fokus ke kepulauan yang dipilih
-    final Matrix4 targetMatrix = Matrix4.identity();
-    if (region == 'Sumatera') {
-      targetMatrix.scale(1.8);
-      targetMatrix.translate(-50.0, -100.0);
-    } else if (region == 'Jawa') {
-      targetMatrix.scale(2.2);
-      targetMatrix.translate(-260.0, -320.0);
-    } else if (region == 'Kalimantan') {
-      targetMatrix.scale(1.9);
-      targetMatrix.translate(-310.0, -110.0);
-    } else if (region == 'Sulawesi') {
-      targetMatrix.scale(2.0);
-      targetMatrix.translate(-490.0, -160.0);
-    } else if (region == 'Bali & Nusa Tenggara') {
-      targetMatrix.scale(2.3);
-      targetMatrix.translate(-490.0, -370.0);
-    } else if (region == 'Maluku & Papua') {
-      targetMatrix.scale(1.8);
-      targetMatrix.translate(-670.0, -180.0);
-    } else {
-      // Reset zoom Semua
-      targetMatrix.scale(1.0);
-      targetMatrix.translate(0.0, 0.0);
+    if (_viewportSize != Size.zero) {
+      final target = _getRegionMatrix(region, _viewportSize);
+      _animateToMatrix(target);
     }
 
-    _transformController.value = targetMatrix;
-
-    // Pilih salah satu provinsi di region tersebut
+    // Otomatis pilih provinsi pertama di region tersebut
     final firstInRegion = _provincePoints.firstWhere(
       (p) => region == 'Semua' || p.region == region,
       orElse: () => _provincePoints.first,
@@ -188,22 +272,45 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
     SoundService.playClick();
     setState(() {
       _selectedRegion = 'Semua';
-      _transformController.value = Matrix4.identity();
     });
+    if (_viewportSize != Size.zero) {
+      _animateToMatrix(_getFittedMatrix(_viewportSize));
+    }
   }
 
   void _zoomIn() {
     SoundService.playClick();
-    final matrix = _transformController.value.clone();
-    matrix.scale(1.3, 1.3);
-    _transformController.value = matrix;
+    _zoomBy(1.4);
   }
 
   void _zoomOut() {
     SoundService.playClick();
-    final matrix = _transformController.value.clone();
-    matrix.scale(0.77, 0.77);
-    _transformController.value = matrix;
+    _zoomBy(0.7);
+  }
+
+  /// Zoom terpusat di layar: memperbesar/memperkecil dari titik tengah viewport
+  void _zoomBy(double factor) {
+    if (_viewportSize == Size.zero) return;
+
+    final currentMatrix = _transformController.value.clone();
+    final double currentScale = currentMatrix.getMaxScaleOnAxis();
+    if (currentScale <= 0) return;
+
+    // Batasi skala absolut
+    final double targetScale = (currentScale * factor).clamp(0.08, 5.0);
+    final double actualFactor = targetScale / currentScale;
+
+    // Titik pusat zoom di tengah viewport
+    final double cx = _viewportSize.width / 2;
+    final double cy = _viewportSize.height / 2;
+
+    final matrix = Matrix4.identity()
+      ..translate(cx, cy)
+      ..scale(actualFactor)
+      ..translate(-cx, -cy)
+      ..multiply(currentMatrix);
+
+    _animateToMatrix(matrix);
   }
 
   @override
@@ -213,7 +320,7 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
     final learnedCount = _learnedIds.length;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF10141D) : const Color(0xFFEBF3FC),
+      backgroundColor: isDark ? const Color(0xFF0F1722) : const Color(0xFFE3EDF7),
       appBar: AppBar(
         title: const Text('Peta Budaya Digital'),
         elevation: 0,
@@ -249,270 +356,346 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // 1. Interactive Map Canvas (Pan, Pinch & Zoom)
-          Positioned.fill(
-            child: InteractiveViewer(
-              transformationController: _transformController,
-              minScale: 0.8,
-              maxScale: 4.5,
-              boundaryMargin: const EdgeInsets.all(180),
-              child: Center(
-                child: SizedBox(
-                  width: 1050,
-                  height: 560,
-                  child: Stack(
-                    children: [
-                      // Vector Landmass & Oceans Canvas
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: IndonesiaMapPainter(
-                            isDark: isDark,
-                            selectedRegion: _selectedRegion,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final curSize = Size(constraints.maxWidth, constraints.maxHeight);
+          if (!_hasInitialFitted && curSize.width > 0 && curSize.height > 0) {
+            _viewportSize = curSize;
+            _hasInitialFitted = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _transformController.value = _getFittedMatrix(curSize);
+              }
+            });
+          } else {
+            _viewportSize = curSize;
+          }
+
+          return Stack(
+            children: [
+              // 1. PETA INTERAKTIF (InteractiveViewer + constrained:false + boundaryMargin:infinity)
+              Positioned.fill(
+                child: InteractiveViewer(
+                  transformationController: _transformController,
+                  constrained: false,
+                  // boundaryMargin infinite = cubit bebas perbesar & perkecil tanpa batas
+                  boundaryMargin: const EdgeInsets.all(double.infinity),
+                  minScale: 0.08,
+                  maxScale: 5.0,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  clipBehavior: Clip.none,
+                  child: SizedBox(
+                    width: mapWidth,
+                    height: mapHeight,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Background Siluet Peta Asli Indonesia
+                        Positioned.fill(
+                          child: Image.asset(
+                            isDark
+                                ? 'assets/indonesia_map_dark.png'
+                                : 'assets/indonesia_map_light.png',
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
                           ),
                         ),
-                      ),
 
-                      // Interactive Province Pins
-                      ..._provincePoints.map((point) {
-                        final isSelected = _selectedCulture?.id == point.id;
-                        final isLearned = _learnedIds.contains(point.id);
-                        final matchesRegion = _selectedRegion == 'Semua' || point.region == _selectedRegion;
+                        // Watermark Nama Pulau Utama
+                        ..._buildWatermarkLabels(isDark),
 
-                        return Positioned(
-                          left: point.x - 22,
-                          top: point.y - 28,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => _selectProvinceById(point.id),
-                            child: AnimatedOpacity(
-                              duration: const Duration(milliseconds: 300),
-                              opacity: matchesRegion ? 1.0 : 0.35,
-                              child: AnimatedBuilder(
-                                animation: _pulseController,
-                                builder: (context, child) {
-                                  final pulseScale = isSelected ? (1.0 + 0.15 * _pulseController.value) : 1.0;
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Transform.scale(
+                        // 38 Pin Interaktif Provinsi Presisi (Titik pusat pin tepat di x, y)
+                        ..._provincePoints.map((point) {
+                          final isSelected = _selectedCulture?.id == point.id;
+                          final isLearned = _learnedIds.contains(point.id);
+                          final matchesRegion = _selectedRegion == 'Semua' || point.region == _selectedRegion;
+
+                          return Positioned(
+                            // Titik pusat koordinat tepat di point.x dan point.y
+                            left: point.x - 20,
+                            top: point.y - 20,
+                            width: 40,
+                            height: 40,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.deferToChild,
+                              onTap: () => _selectProvinceById(point.id),
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 250),
+                                opacity: matchesRegion ? 1.0 : 0.35,
+                                child: Center(
+                                  child: AnimatedBuilder(
+                                    animation: _pulseController,
+                                    builder: (context, child) {
+                                      final pulseScale = isSelected ? (1.0 + 0.20 * _pulseController.value) : 1.0;
+                                      final double pinSize = isSelected ? 30.0 : 22.0;
+
+                                      return Transform.scale(
                                         scale: pulseScale,
                                         child: Container(
-                                          width: isSelected ? 38 : 30,
-                                          height: isSelected ? 38 : 30,
+                                          width: pinSize,
+                                          height: pinSize,
                                           decoration: BoxDecoration(
                                             color: isSelected
                                                 ? (isDark ? AppColors.accent : AppColors.primary)
                                                 : (isLearned
                                                     ? const Color(0xFF2E7D32)
-                                                    : (isDark ? const Color(0xFF263238) : Colors.white)),
+                                                    : (isDark ? const Color(0xFF1E293B) : Colors.white)),
                                             shape: BoxShape.circle,
                                             border: Border.all(
                                               color: isSelected
                                                   ? Colors.white
-                                                  : (isDark ? Colors.white38 : AppColors.primary),
+                                                  : (isDark ? Colors.white70 : AppColors.primary),
                                               width: isSelected ? 2.5 : 1.5,
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: isSelected
-                                                    ? (isDark ? AppColors.accent.withOpacity(0.6) : AppColors.primary.withOpacity(0.5))
+                                                    ? (isDark ? AppColors.accent.withOpacity(0.8) : AppColors.primary.withOpacity(0.6))
                                                     : Colors.black26,
-                                                blurRadius: isSelected ? 12 : 5,
-                                                offset: const Offset(0, 3),
+                                                blurRadius: isSelected ? 12 : 4,
+                                                offset: const Offset(0, 2),
                                               ),
                                             ],
                                           ),
                                           child: Center(
                                             child: isLearned && !isSelected
-                                                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                                ? const Icon(Icons.check, size: 13, color: Colors.white)
                                                 : Icon(
                                                     Icons.place_rounded,
-                                                    size: isSelected ? 22 : 17,
+                                                    size: isSelected ? 18 : 13,
                                                     color: isSelected
                                                         ? (isDark ? Colors.black87 : Colors.white)
                                                         : (isDark ? Colors.white70 : AppColors.primary),
                                                   ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      // Label Nama Provinsi Ringkas
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? (isDark ? AppColors.accent : AppColors.primary)
-                                              : (isDark ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.85)),
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: isSelected ? Colors.white38 : Colors.black12,
-                                            width: 0.8,
-                                          ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+
+                        // Label nama provinsi yang sedang terpilih (Callout melayang tepat di atas pin)
+                        if (_selectedCulture != null) ...[
+                          (() {
+                            final selPoint = _provincePoints.firstWhere(
+                              (p) => p.id == _selectedCulture!.id,
+                              orElse: () => _provincePoints.first,
+                            );
+                            return Positioned(
+                              left: selPoint.x - 70,
+                              top: selPoint.y - 40,
+                              width: 140,
+                              child: IgnorePointer(
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? AppColors.accent : AppColors.primary,
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black38,
+                                          blurRadius: 8,
+                                          offset: Offset(0, 3),
                                         ),
-                                        child: Text(
-                                          point.name,
-                                          style: TextStyle(
-                                            fontSize: isSelected ? 10 : 8.5,
-                                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                                            color: isSelected
-                                                ? (isDark ? Colors.black87 : Colors.white)
-                                                : (isDark ? Colors.white : Colors.black87),
-                                          ),
-                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      selPoint.name,
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: isDark ? Colors.black87 : Colors.white,
                                       ),
-                                    ],
-                                  );
-                                },
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          })(),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 2. Toolbar Pemilihan Pulau / Wilayah (Atas)
+              Positioned(
+                top: 12,
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  height: 42,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _regions.length,
+                    separatorBuilder: (context, i) => const SizedBox(width: 8),
+                    itemBuilder: (context, idx) {
+                      final reg = _regions[idx];
+                      final isSelected = _selectedRegion == reg;
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _onRegionChanged(reg),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? (isDark ? AppColors.accent : AppColors.primary)
+                                  : (isDark ? AppColors.surfaceDark.withOpacity(0.92) : Colors.white.withOpacity(0.95)),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? (isDark ? AppColors.accent : AppColors.primary)
+                                    : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark ? Colors.black45 : Colors.black.withOpacity(0.05),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                reg,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  color: isSelected
+                                      ? (isDark ? Colors.black87 : Colors.white)
+                                      : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimary),
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      }),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // 3. Tombol Kontrol Zoom Mengambang (Kanan Atas)
+              Positioned(
+                top: 64,
+                right: 16,
+                child: Column(
+                  children: [
+                    _buildMapControlBtn(
+                      icon: Icons.add_rounded,
+                      tooltip: 'Perbesar Peta',
+                      isDark: isDark,
+                      onTap: _zoomIn,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildMapControlBtn(
+                      icon: Icons.remove_rounded,
+                      tooltip: 'Perkecil Peta',
+                      isDark: isDark,
+                      onTap: _zoomOut,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildMapControlBtn(
+                      icon: Icons.fit_screen_rounded,
+                      tooltip: 'Tampilan Penuh Indonesia',
+                      isDark: isDark,
+                      onTap: _resetZoom,
+                    ),
+                  ],
+                ),
+              ),
+
+              // 4. Panduan Geser & Cubit (Kiri Atas)
+              Positioned(
+                top: 64,
+                left: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.black87 : Colors.white).withOpacity(0.88),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : Colors.black12,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.pinch_rounded, size: 15, color: AppColors.accent),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Cubit layar untuk perbesar / perkecil',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // 2. Bar Pemilihan Pulau / Region (Atas)
-          Positioned(
-            top: 12,
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: 42,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _regions.length,
-                separatorBuilder: (context, i) => const SizedBox(width: 8),
-                itemBuilder: (context, idx) {
-                  final reg = _regions[idx];
-                  final isSelected = _selectedRegion == reg;
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _onRegionChanged(reg),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? AppColors.accent : AppColors.primary)
-                              : (isDark ? AppColors.surfaceDark.withOpacity(0.9) : Colors.white.withOpacity(0.95)),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? (isDark ? AppColors.accent : AppColors.primary)
-                                : (isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08)),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.black45 : Colors.black.withOpacity(0.05),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            reg,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                              color: isSelected
-                                  ? (isDark ? Colors.black87 : Colors.white)
-                                  : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimary),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // 3. Tombol Floating Zoom Controls (Kanan Atas)
-          Positioned(
-            top: 64,
-            right: 16,
-            child: Column(
-              children: [
-                _buildMapControlBtn(
-                  icon: Icons.add_rounded,
-                  tooltip: 'Perbesar Peta',
-                  isDark: isDark,
-                  onTap: _zoomIn,
-                ),
-                const SizedBox(height: 8),
-                _buildMapControlBtn(
-                  icon: Icons.remove_rounded,
-                  tooltip: 'Perkecil Peta',
-                  isDark: isDark,
-                  onTap: _zoomOut,
-                ),
-                const SizedBox(height: 8),
-                _buildMapControlBtn(
-                  icon: Icons.restart_alt_rounded,
-                  tooltip: 'Reset Tampilan Peta',
-                  isDark: isDark,
-                  onTap: _resetZoom,
-                ),
-              ],
-            ),
-          ),
-
-          // 4. Petunjuk Interaktif Singkat (Kiri Atas)
-          Positioned(
-            top: 64,
-            left: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: (isDark ? Colors.black87 : Colors.white).withOpacity(0.85),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? AppColors.borderDark : Colors.black12,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.touch_app_rounded, size: 16, color: AppColors.accent),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Geser & Cubit untuk Zoom Peta',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
+              // 5. Kartu Detail Kebudayaan Provinsi Terpilih (Bawah)
+              if (_selectedCulture != null)
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 18,
+                  child: _buildCulturePreviewCard(
+                    culture: _selectedCulture!,
+                    isDark: isDark,
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          // 5. Kartu Detail Kebudayaan Provinsi yang Dipilih (Bawah)
-          if (_selectedCulture != null)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 18,
-              child: _buildCulturePreviewCard(
-                culture: _selectedCulture!,
-                isDark: isDark,
-              ),
-            ),
-        ],
+                ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  List<Widget> _buildWatermarkLabels(bool isDark) {
+    Widget makeLabel(String title, double x, double y) {
+      return Positioned(
+        left: x,
+        top: y,
+        child: IgnorePointer(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2.2,
+              color: (isDark ? Colors.white : Colors.black87).withOpacity(0.35),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Posisi watermark disesuaikan dengan kanvas 1400 x 700
+    return [
+      makeLabel('SUMATERA', 200, 334),
+      makeLabel('JAWA', 500, 520),
+      makeLabel('KALIMANTAN', 550, 270),
+      makeLabel('SULAWESI', 800, 200),
+      makeLabel('BALI & NUSA TENGGARA', 710, 550),
+      makeLabel('MALUKU', 950, 385),
+      makeLabel('PAPUA', 1160, 290),
+    ];
   }
 
   Widget _buildMapControlBtn({
@@ -532,7 +715,7 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark.withOpacity(0.9) : Colors.white.withOpacity(0.95),
+              color: isDark ? AppColors.surfaceDark.withOpacity(0.92) : Colors.white.withOpacity(0.95),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDark ? AppColors.borderDark : Colors.black.withOpacity(0.08),
@@ -613,7 +796,7 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
                 ),
               ),
               const SizedBox(width: 12),
-              // Nama & Badge Region
+              // Nama & Info Provinsi
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -676,7 +859,7 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'Pulau: ${culture.region}',
+                        'Wilayah: ${culture.region}',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -726,7 +909,7 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
             ],
           ),
           const SizedBox(height: 12),
-          // Tombol Buka Detail Kebudayaan Daerah
+          // Tombol Jelajahi Kebudayaan
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -770,253 +953,5 @@ class _IndonesiaMapScreenState extends State<IndonesiaMapScreen> with SingleTick
         ],
       ),
     );
-  }
-}
-
-/// CustomPainter untuk menggambar siluet pulau-pulau besar kepulauan Indonesia
-class IndonesiaMapPainter extends CustomPainter {
-  final bool isDark;
-  final String selectedRegion;
-
-  IndonesiaMapPainter({
-    required this.isDark,
-    required this.selectedRegion,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 1. Gambar Grid Maritim / Samudra
-    _drawMaritimeGrid(canvas, size);
-
-    // 2. Gambar Pulau-Pulau Utama Nusantara
-    _drawIslands(canvas, size);
-
-    // 3. Gambar Label Kepulauan
-    _drawIslandLabels(canvas);
-  }
-
-  void _drawMaritimeGrid(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = (isDark ? Colors.white.withOpacity(0.04) : Colors.blueGrey.withOpacity(0.08))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Garis horizontal (lintang)
-    for (double y = 50; y < size.height; y += 70) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-    // Garis vertikal (bujur)
-    for (double x = 70; x < size.width; x += 100) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-
-    // Garis Khatulistiwa / Equator (y = 210)
-    final equatorPaint = Paint()
-      ..color = (isDark ? AppColors.accent.withOpacity(0.2) : Colors.red.withOpacity(0.18))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    canvas.drawLine(Offset(0, 210), Offset(size.width, 210), equatorPaint);
-  }
-
-  void _drawIslands(Canvas canvas, Size size) {
-    // Warna pulau normal vs highlight jika wilayah dipilih
-    Color getLandColor(String region) {
-      final isHighlighted = selectedRegion == 'Semua' || selectedRegion == region;
-      if (isDark) {
-        return isHighlighted ? const Color(0xFF1E4636) : const Color(0xFF1B2838);
-      } else {
-        return isHighlighted ? const Color(0xFFC8E6C9) : const Color(0xFFD7E5F0);
-      }
-    }
-
-    Color getCoastColor(String region) {
-      final isHighlighted = selectedRegion == 'Semua' || selectedRegion == region;
-      if (isDark) {
-        return isHighlighted ? const Color(0xFF4CAF50) : const Color(0xFF2C3E50);
-      } else {
-        return isHighlighted ? const Color(0xFF43A047) : const Color(0xFF90A4AE);
-      }
-    }
-
-    void drawLandMass(Path path, String region) {
-      final fillPaint = Paint()
-        ..color = getLandColor(region)
-        ..style = PaintingStyle.fill;
-      final strokePaint = Paint()
-        ..color = getCoastColor(region)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-
-      canvas.drawPath(path, fillPaint);
-      canvas.drawPath(path, strokePaint);
-    }
-
-    // --- PULAU SUMATERA ---
-    final sumatera = Path()
-      ..moveTo(80, 80)
-      ..lineTo(125, 115)
-      ..lineTo(155, 160)
-      ..lineTo(215, 230)
-      ..lineTo(260, 310)
-      ..lineTo(285, 365)
-      ..lineTo(265, 380)
-      ..lineTo(235, 360)
-      ..lineTo(190, 305)
-      ..lineTo(145, 230)
-      ..lineTo(110, 160)
-      ..lineTo(70, 110)
-      ..close();
-    drawLandMass(sumatera, 'Sumatera');
-
-    // Pulau Bangka & Belitung
-    final bangka = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(295, 260), width: 28, height: 42));
-    drawLandMass(bangka, 'Sumatera');
-
-    final belitung = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(330, 290), width: 22, height: 22));
-    drawLandMass(belitung, 'Sumatera');
-
-    // Pulau Nias & Mentawai
-    final nias = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(95, 180), width: 14, height: 26));
-    drawLandMass(nias, 'Sumatera');
-
-    // --- PULAU JAWA ---
-    final jawa = Path()
-      ..moveTo(300, 410)
-      ..lineTo(350, 405)
-      ..lineTo(410, 420)
-      ..lineTo(470, 425)
-      ..lineTo(510, 440)
-      ..lineTo(495, 455)
-      ..lineTo(430, 450)
-      ..lineTo(370, 445)
-      ..lineTo(320, 435)
-      ..close();
-    drawLandMass(jawa, 'Jawa');
-
-    // Pulau Madura
-    final madura = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(490, 415), width: 34, height: 16));
-    drawLandMass(madura, 'Jawa');
-
-    // --- PULAU KALIMANTAN ---
-    final kalimantan = Path()
-      ..moveTo(370, 205)
-      ..lineTo(425, 140)
-      ..lineTo(485, 120)
-      ..lineTo(525, 145)
-      ..lineTo(530, 215)
-      ..lineTo(515, 290)
-      ..lineTo(475, 325)
-      ..lineTo(435, 305)
-      ..lineTo(365, 295)
-      ..lineTo(350, 245)
-      ..close();
-    drawLandMass(kalimantan, 'Kalimantan');
-
-    // --- PULAU SULAWESI (Bentuk K Ikonis) ---
-    final sulawesi = Path()
-      ..moveTo(630, 160)
-      ..lineTo(685, 140) // lengan utara (Minahasa)
-      ..lineTo(670, 165)
-      ..lineTo(625, 190) // leher
-      ..lineTo(665, 220) // lengan timur
-      ..lineTo(645, 245)
-      ..lineTo(620, 240) // pusat
-      ..lineTo(670, 310) // lengan tenggara
-      ..lineTo(640, 325)
-      ..lineTo(610, 275) // teluk bone
-      ..lineTo(615, 345) // lengan selatan (Makassar)
-      ..lineTo(585, 340)
-      ..lineTo(580, 260)
-      ..lineTo(600, 195)
-      ..close();
-    drawLandMass(sulawesi, 'Sulawesi');
-
-    // --- BALI & NUSA TENGGARA ---
-    // Bali
-    final bali = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(540, 460), width: 22, height: 18));
-    drawLandMass(bali, 'Bali & Nusa Tenggara');
-
-    // Lombok & Sumbawa
-    final ntbPath = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(570, 465), width: 18, height: 18))
-      ..addOval(Rect.fromCenter(center: const Offset(605, 465), width: 36, height: 20));
-    drawLandMass(ntbPath, 'Bali & Nusa Tenggara');
-
-    // Flores, Sumba & Timor (NTT)
-    final nttPath = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(665, 465), width: 48, height: 16))
-      ..addOval(Rect.fromCenter(center: const Offset(655, 490), width: 32, height: 18))
-      ..addOval(Rect.fromCenter(center: const Offset(710, 480), width: 38, height: 20));
-    drawLandMass(nttPath, 'Bali & Nusa Tenggara');
-
-    // --- KEPULAUAN MALUKU ---
-    // Halmahera & Morotai (Maluku Utara)
-    final malut = Path()
-      ..moveTo(745, 160)
-      ..lineTo(765, 175)
-      ..lineTo(755, 215)
-      ..lineTo(735, 195)
-      ..close();
-    drawLandMass(malut, 'Maluku & Papua');
-
-    // Seram, Buru, Ambon (Maluku)
-    final maluku = Path()
-      ..addOval(Rect.fromCenter(center: const Offset(740, 275), width: 26, height: 18)) // Buru
-      ..addOval(Rect.fromCenter(center: const Offset(785, 280), width: 44, height: 20)); // Seram
-    drawLandMass(maluku, 'Maluku & Papua');
-
-    // --- PULAU PAPUA (Bentuk Kepala Burung Cenderawasih) ---
-    final papua = Path()
-      ..moveTo(815, 210) // Kepala Burung (Doberai)
-      ..lineTo(845, 205)
-      ..lineTo(840, 240)
-      ..lineTo(865, 235) // Leher
-      ..lineTo(915, 220) // Pantai Utara
-      ..lineTo(965, 245)
-      ..lineTo(975, 340) // Perbatasan Merauke
-      ..lineTo(925, 335)
-      ..lineTo(885, 290)
-      ..lineTo(840, 275)
-      ..lineTo(810, 245)
-      ..close();
-    drawLandMass(papua, 'Maluku & Papua');
-  }
-
-  void _drawIslandLabels(Canvas canvas) {
-    void drawLabel(String text, Offset pos) {
-      final textSpan = TextSpan(
-        text: text,
-        style: TextStyle(
-          color: (isDark ? Colors.white : Colors.black87).withOpacity(0.35),
-          fontSize: 13,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 2.0,
-        ),
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, pos);
-    }
-
-    drawLabel('SUMATERA', const Offset(135, 275));
-    drawLabel('JAWA', const Offset(380, 465));
-    drawLabel('KALIMANTAN', const Offset(395, 200));
-    drawLabel('SULAWESI', const Offset(625, 120));
-    drawLabel('NUSA TENGGARA', const Offset(590, 500));
-    drawLabel('MALUKU', const Offset(735, 320));
-    drawLabel('PAPUA', const Offset(885, 195));
-  }
-
-  @override
-  bool shouldRepaint(covariant IndonesiaMapPainter oldDelegate) {
-    return oldDelegate.isDark != isDark || oldDelegate.selectedRegion != selectedRegion;
   }
 }
