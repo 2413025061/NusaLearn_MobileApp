@@ -1,102 +1,340 @@
 {
-  "judul": "Analisis Transformasi Web ke Mobile Murni (Flutter) - NusaLearn",
+  "judul": "Analisis Transformasi Web Wrapper ke Mobile Native (Flutter) - NusaLearn",
   "tanggal": "2026-10-13",
   "penulis_proyek": "Ibnaty Chalisa Adabina (2413025061, PTI24 A)",
   "program_studi": "Pendidikan Teknologi Informasi - FKIP Universitas Lampung",
+  "mata_kuliah": "Mobile Programming (2026)",
+  "target_pengguna": "Siswa Sekolah Dasar (Kelas 4-6) dan Siswa Sekolah Menengah Pertama (SMP)",
   "ringkasan_eksekutif": {
-    "latar_belakang": "NusaLearn sebelumnya dikembangkan sebagai Multimedia Pembelajaran Interaktif (MPI) berbasis web (HTML5, CSS3, JS) yang dibungkus dengan wrapper aplikasi web (AppsGeyser). Transformasi ini bertujuan memigrasikan NusaLearn menjadi aplikasi mobile murni berbasis Flutter dan Dart dengan performa native, arsitektur terstruktur, dan pengalaman pengguna mobile yang modern.",
-    "target_pengguna": "Siswa SD kelas 4-6 dan SMP.",
-    "fokus_konten": "Eksplorasi Budaya 38 Provinsi di Indonesia, 38 Pahlawan Nasional Indonesia, dan Kuis Interaktif 30 Soal dengan sistem evaluasi cerdas."
+    "latar_belakang": "NusaLearn sebelumnya dikembangkan sebagai Multimedia Pembelajaran Interaktif (MPI) berbasis web (HTML5, CSS3, JS) yang dibungkus dengan wrapper aplikasi web (AppsGeyser). Transformasi ini memigrasikan NusaLearn menjadi aplikasi mobile native murni berbasis Flutter dan Dart dengan kompilasi AOT, arsitektur berlapis, performa 60 FPS, serta penambahan fitur-fitur interaktif modern seperti gamifikasi progres, dark mode adaptif, audio kuis profesional, dan peta budaya spasial interaktif.",
+    "fokus_konten": "Eksplorasi Budaya 38 Provinsi di Indonesia, 38 Pahlawan Nasional Indonesia, Kuis Evaluasi Cerdas 30 Soal, dan Peta Digital Geografis Presisi."
   },
-  "analisis_aset_dan_data_awal": {
-    "berkas_web_lama": [
-      "index.html",
-      "style.css",
-      "script.js"
-    ],
-    "folder_aset": {
-      "lokasi": "assets/",
-      "jumlah_gambar": 78,
-      "kategori": [
-        "Logo aplikasi & institusi (NusaLearn.png, Logo_UnivLampung.png)",
-        "38 Gambar/Foto Budaya & Rumah Adat Daerah",
-        "38 Foto Tokoh Pahlawan Nasional Indonesia"
-      ]
+  "inventarisasi_konten": {
+    "kebudayaan_daerah": {
+      "jumlah": 38,
+      "cakupan": "38 Provinsi dari Aceh hingga seluruh pemekaran wilayah Papua (Papua Barat Daya, Papua Barat, Papua Tengah, Papua Pegunungan, Papua Selatan)",
+      "atribut_data": ["id", "provinsi", "ibu_kota", "gugus_pulau", "sejarah_singkat", "rumah_adat", "tari_tradisional", "bahasa_daerah", "gambar_aset"]
     },
-    "kelengkapan_data": {
-      "budaya": 38,
-      "pahlawan": 38,
-      "bank_soal": 30
+    "pahlawan_nasional": {
+      "jumlah": 38,
+      "cakupan": "Tokoh pahlawan nasional dari 38 daerah di Indonesia",
+      "atribut_data": ["id", "nama", "asal_daerah", "gugus_pulau", "biografi_perjuangan", "fakta_menarik", "gambar_aset"]
+    },
+    "evaluasi_kuis": {
+      "bank_soal": 30,
+      "soal_per_sesi": 10,
+      "waktu_per_soal_detik": 15,
+      "atribut_data": ["id", "pertanyaan", "kategori", "opsi_jawaban", "jawaban_benar", "pembahasan_edukatif"]
+    },
+    "aset_visual_dan_audio": {
+      "total_gambar_lokal": 80,
+      "total_audio_sound_effect": 5,
+      "status_koneksi": "100% Offline Ready tanpa membutuhkan jaringan internet"
     }
   },
-  "gap_analysis_web_vs_mobile_flutter": {
-    "navigasi": {
-      "sebelumnya": "DOM manipulation kaku berbasis CSS display toggle (active/none)",
-      "flutter": "Native Navigator 2.0 / Page Routing dengan animasi slide & fade yang mulus"
+  "matriks_transformasi_web_vs_flutter": {
+    "teknologi_inti": {
+      "web_lama": "HTML5, CSS3, Vanilla JS dalam WebView Wrapper",
+      "flutter_native": "Flutter 3.47+ & Dart 3.13+ (Kompilasi AOT Native ARM/x86)"
     },
-    "transisi_gambar": {
-      "sebelumnya": "Tampilan gambar berubah mendadak saat masuk ke halaman detail",
-      "flutter": "Hero Animation widget sehingga gambar kartu meluncur dan membesar secara dramatis ke halaman detail"
+    "performa_rendering": {
+      "web_lama": "Tergantung browser WebView, rentan lag (30-45 FPS)",
+      "flutter_native": "Konsisten 60 FPS, GPU-accelerated rendering"
     },
-    "performa_dan_memori": {
-      "sebelumnya": "Pemuatan file gambar resolusi tinggi tanpa kompresi memori menyebabkan lag saat scroll",
-      "flutter": "Image cache rendering, precacheImage, dan pemanfaatan AspectRatio widget adaptif"
+    "navigasi_antarmuka": {
+      "web_lama": "Toggle display class di DOM CSS (statis dan kaku)",
+      "flutter_native": "Navigator Stack, MaterialPageRoute, dan Hero Animations"
     },
-    "pencarian_dan_eksplorasi": {
-      "sebelumnya": "Hanya kotak input teks sederhana",
-      "flutter": "Search bar real-time disertai Filter Chips Kategori Pulau (Sumatera, Jawa, Kalimantan, Sulawesi, Bali & Nusa Tenggara, Maluku & Papua)"
+    "pencarian_dan_filter": {
+      "web_lama": "Hanya kotak input teks biasa tanpa pengelompokan",
+      "flutter_native": "Realtime Search Bar + Filter Chips 6 Gugus Wilayah Kepulauan"
     },
-    "sistem_kuis_dan_gamifikasi": {
-      "sebelumnya": "Variabel memori global JavaScript (skor hilang saat layar ditutup), confetti berbasis canvas-confetti JS",
-      "flutter": "Quiz Engine modular, timer terisolasi, modal dialog feedback interaktif, penyimpanan skor tertinggi lokal (High Score via SharedPreferences), dan efek Confetti Flutter"
+    "sistem_kuis": {
+      "web_lama": "Variabel memori global JavaScript (skor hilang saat layar ditutup)",
+      "flutter_native": "Modular Quiz Engine, timer terisolasi 15s, modal dialog feedback, dan penyimpanan rekor High Score"
     },
-    "antarmuka_dan_desain": {
-      "sebelumnya": "Box-shadow statis, responsive layout terbatas",
-      "flutter": "Nuansa Nusantara Modern: Warna Utama Deep Maroon (#900500), Aksen Emas (#D4B356), Latar Krem (#FFF5F0), Material 3 Design, dan Tipografi Google Fonts Poppins"
+    "gamifikasi_progres": {
+      "web_lama": "Tidak tersedia",
+      "flutter_native": "Learning Progress Tracker: status baca otomatis, badge lencana, dan dashboard wawasan bertingkat"
+    },
+    "tema_tampilan": {
+      "web_lama": "Hanya tema terang statis",
+      "flutter_native": "Dynamic Dark Mode adaptif dengan ThemeService dan penyimpanan preferensi"
+    },
+    "sistem_audio": {
+      "web_lama": "Hening tanpa efek audio interaktif",
+      "flutter_native": "SoundService dengan efek klik sentuh dan 4 tingkat nada evaluasi kuis (100, 70-90, 50-60, 0-40)"
+    },
+    "visualisasi_spasial": {
+      "web_lama": "Tidak tersedia peta",
+      "flutter_native": "Peta Budaya Digital Indonesia interaktif: gestur cubit zoom bebas, 38 koordinat presisi, dan kartu preview budaya"
     }
   },
+  "empat_tahapan_progres": [
+    {
+      "progres": 1,
+      "kode": "PROGRES_1",
+      "nama": "Fondasi Arsitektur & Transformasi Inti Sistem",
+      "deskripsi": "Inisialisasi arsitektur Clean/Layered Architecture, migrasi data 38 budaya, 38 pahlawan, 30 soal kuis, serta pembuatan layar utama dan mesin kuis modular.",
+      "fitur_utama": [
+        "Inisialisasi proyek Flutter dengan tema Material 3 identitas Nusantara (Marun #900500 & Emas #D4B356)",
+        "Migrasi model data strongly-typed: CultureItem, HeroItem, dan QuizQuestion",
+        "Splash Screen dengan animasi logo dan tombol Mulai Belajar",
+        "HomeScreen dengan rekap High Score dan menu navigasi utama",
+        "Jelajah Budaya dan Galeri Pahlawan: Grid 2-kolom, realtime search bar, filter chips pulau, dan Hero animation",
+        "Layar Detail Budaya dan Pahlawan: SliverAppBar dengan fakta menarik dan detail komprehensif",
+        "Modular Quiz Engine: 10 soal acak, timer 15 detik/soal, modal feedback edukatif, High Score lokal, dan konfeti",
+        "Layar Tentang Pengembang (PTI FKIP Universitas Lampung 2026)"
+      ],
+      "berkas_terkait": [
+        "lib/main.dart",
+        "lib/constants/app_colors.dart",
+        "lib/constants/app_theme.dart",
+        "lib/data/app_data.dart",
+        "lib/models/culture_model.dart",
+        "lib/models/hero_model.dart",
+        "lib/models/quiz_model.dart",
+        "lib/services/storage_service.dart",
+        "lib/screens/splash_screen.dart",
+        "lib/screens/home_screen.dart",
+        "lib/screens/culture_list_screen.dart",
+        "lib/screens/culture_detail_screen.dart",
+        "lib/screens/hero_list_screen.dart",
+        "lib/screens/hero_detail_screen.dart",
+        "lib/screens/quiz_intro_screen.dart",
+        "lib/screens/quiz_play_screen.dart",
+        "lib/screens/quiz_result_screen.dart",
+        "lib/screens/about_screen.dart",
+        "pubspec.yaml"
+      ],
+      "rekomendasi_commit_git": [
+        {
+          "tag": "1.1",
+          "message": "feat(core): initialize flutter project with layered architecture and nusantara theme tokens"
+        },
+        {
+          "tag": "1.2",
+          "message": "feat(data): migrate 38 cultures, 38 heroes, and 30 quiz questions into strongly typed models"
+        },
+        {
+          "tag": "1.3",
+          "message": "feat(screens): implement culture and hero modules with hero animations and search filters"
+        },
+        {
+          "tag": "1.4",
+          "message": "feat(quiz): build modular quiz engine with 15s timer, instant feedback, and local high score"
+        }
+      ],
+      "hasil_pengujian": "Aplikasi berhasil dikompilasi, semua transisi layar berjalan mulus pada 60 FPS, kuis berhasil menghitung skor dan menyimpan rekor lokal."
+    },
+    {
+      "progres": 2,
+      "kode": "PROGRES_2",
+      "nama": "Gamifikasi Progres Belajar & Pelacakan Wawasan",
+      "deskripsi": "Pengembangan sistem pelacakan riwayat belajar terukur bagi siswa SD/SMP dengan penandaan materi selesai, penyimpanan persisten, dan dashboard wawasan bertingkat.",
+      "fitur_utama": [
+        "Pencatatan otomatis status selesai saat materi detail budaya atau pahlawan dibuka dan dibaca",
+        "Persistensi riwayat baca (learnedCultures & learnedHeroes) via SharedPreferences",
+        "Lencana visual hijau centang (Sudah Dibaca / Selesai) pada kartu daftar dan layar detail",
+        "Filter status (Semua, Sudah Dibaca, Belum Dibaca) pada bilah pencarian budaya dan pahlawan",
+        "Dashboard Progres Belajar (LearningProgressScreen): statistik total dibaca, indikator persentase, dan gelar level wawasan (Penjelajah Pemula hingga Pendekar Budaya)",
+        "Widget ringkasan progres belajar real-time pada Beranda",
+        "Fitur reset progres belajar dengan konfirmasi aman"
+      ],
+      "berkas_terkait": [
+        "lib/screens/learning_progress_screen.dart",
+        "lib/services/storage_service.dart",
+        "lib/screens/home_screen.dart",
+        "lib/screens/culture_list_screen.dart",
+        "lib/screens/culture_detail_screen.dart",
+        "lib/screens/hero_list_screen.dart",
+        "lib/screens/hero_detail_screen.dart"
+      ],
+      "rekomendasi_commit_git": [
+        {
+          "tag": "2.1",
+          "message": "feat(progress): extend storage service with persistent learning history methods"
+        },
+        {
+          "tag": "2.2",
+          "message": "feat(ui): add visual read badges and status filter chips to culture and hero lists"
+        },
+        {
+          "tag": "2.3",
+          "message": "feat(dashboard): implement learning progress dashboard screen with insight level rank"
+        },
+        {
+          "tag": "2.4",
+          "message": "feat(home): integrate real-time learning progress summary banner on home screen"
+        }
+      ],
+      "hasil_pengujian": "Status materi yang dibaca berhasil tersimpan dan dimuat kembali setelah aplikasi ditutup paksa. Filter baca dan gelar wawasan terverifikasi akurat."
+    },
+    {
+      "progres": 3,
+      "kode": "PROGRES_3",
+      "nama": "Dark Mode Adaptif & Sistem Efek Suara Profesional",
+      "deskripsi": "Implementasi mode gelap dinamis ramah mata dan integrasi umpan balik audio interaktif (sound effect tombol kuis dan nada evaluasi skor bertingkat).",
+      "fitur_utama": [
+        "Desain palet Dark Mode Material 3: Obsidian Slate (#0F1722), Surface Card (#1E293B), dan Teks Elegan (#F1F5F9)",
+        "ThemeService reaktif dengan persistensi preferensi mode tema pengguna di SharedPreferences",
+        "Tombol toggle cepat Light/Dark mode pada AppBar Beranda",
+        "SoundService terpadu menggunakan paket audioplayers yang aman memori",
+        "Efek suara sentuhan tombol kuis (tactile click) saat memilih opsi jawaban",
+        "Sistem nada evaluasi kuis bertingkat (Multi-Tiered Score Fanfare): Skor 100 (Victory Fanfare), Skor 70-90 (Cheerful Chime), Skor 50-60 (Flat Neutral), Skor 0-40 (Somber Encouragement)",
+        "Kontrol mute/unmute audio dengan status visual"
+      ],
+      "berkas_terkait": [
+        "lib/services/theme_service.dart",
+        "lib/services/sound_service.dart",
+        "lib/constants/app_theme.dart",
+        "lib/constants/app_colors.dart",
+        "lib/screens/quiz_play_screen.dart",
+        "lib/screens/quiz_result_screen.dart",
+        "lib/screens/home_screen.dart",
+        "assets/sounds/quiz_click.wav",
+        "assets/sounds/score_100.wav",
+        "assets/sounds/score_70_90.wav",
+        "assets/sounds/score_50_60.wav",
+        "assets/sounds/score_0_40.wav",
+        "pubspec.yaml"
+      ],
+      "rekomendasi_commit_git": [
+        {
+          "tag": "3.1",
+          "message": "feat(theme): implement dynamic dark mode theme tokens and theme service persistence"
+        },
+        {
+          "tag": "3.2",
+          "message": "feat(ui): add theme switcher toggle to app bar and adapt all screens to dark mode"
+        },
+        {
+          "tag": "3.3",
+          "message": "feat(audio): setup sound service and add interactive tap sound for quiz options"
+        },
+        {
+          "tag": "3.4",
+          "message": "feat(quiz-audio): implement tiered sound effect fanfares for quiz score evaluation"
+        }
+      ],
+      "hasil_pengujian": "Transisi tema berjalan mulus seketika tanpa restart aplikasi. Seluruh 5 efek suara berbunyi sesuai pemicu tanpa lag audio pada perangkat mobile."
+    },
+    {
+      "progres": 4,
+      "kode": "PROGRES_4",
+      "nama": "Peta Budaya Digital Indonesia Interaktif",
+      "deskripsi": "Pengembangan media visualisasi geospasial interaktif: citra peta proporsional 1400x700, 38 koordinat daratan presisi, dan gestur cubit zoom bebas.",
+      "fitur_utama": [
+        "Layar mandiri Peta Budaya Digital (IndonesiaMapScreen) terhubung dari Beranda",
+        "Optimalisasi citra peta Indonesia proporsional 1400x700 (rasio 2:1 alami) untuk mode terang (assets/indonesia_map_light.png) dan gelap (assets/indonesia_map_dark.png), mengatasi tampilan peta gepeng",
+        "Kalibrasi presisi 38 titik koordinat provinsi: 38/38 titik berada tepat di daratan masing-masing provinsi dari Sumatera sampai Papua",
+        "Navigasi sentuh bebas InteractiveViewer: konfigurasi boundaryMargin tak hingga dan minScale 0.08 memungkinkan cubit untuk memperkecil (pinch-to-zoom out) maksimal hingga seluruh peta Indonesia tampak utuh di layar HP",
+        "Zoom detail (maxScale 5.0) dan tombol kontrol mengambang: Perbesar (+), Perkecil (-), dan Reset Layar Penuh",
+        "Toolbar filter wilayah gugus pulau (Sumatera, Jawa, Kalimantan, Sulawesi, Bali-Nusra, Maluku-Papua) dengan animasi pergerakan kamera halus",
+        "Pin interaktif beranimasi denyut dengan ikon status baca dan kartu pratinjau budaya melayang (Cultural Preview Card)"
+      ],
+      "berkas_terkait": [
+        "lib/screens/indonesia_map_screen.dart",
+        "assets/indonesia_map_light.png",
+        "assets/indonesia_map_dark.png",
+        "lib/screens/home_screen.dart"
+      ],
+      "rekomendasi_commit_git": [
+        {
+          "tag": "4.1",
+          "message": "feat(map): scaffold digital culture map screen with interactive viewer and region filters"
+        },
+        {
+          "tag": "4.2",
+          "fix": "fix(map-asset): create proportional 1400x700 map graphics eliminating visual distortion",
+          "message": "fix(map-asset): create proportional 1400x700 map graphics eliminating visual distortion"
+        },
+        {
+          "tag": "4.3",
+          "fix": "fix(map-geo): recalibrate all 38 province pin coordinates onto exact geographic landmass",
+          "message": "fix(map-geo): recalibrate all 38 province pin coordinates onto exact geographic landmass"
+        },
+        {
+          "tag": "4.4",
+          "message": "feat(map-zoom): implement unrestricted pinch-to-zoom out gesture and cultural preview card"
+        }
+      ],
+      "hasil_pengujian": "Peta tidak lagi gepeng, 38 titik berada tepat di daratan pulau, gestur cubit perkecil dapat menampilkan peta penuh dari Sumatera ke Papua, dan pengujian unit lolos 100%."
+    }
+  ],
   "spesifikasi_kebutuhan_sistem": {
     "fungsional": [
-      "FR-01: Splash Screen dengan animasi logo dan tombol Mulai Belajar",
-      "FR-02: Beranda dengan 4 kartu menu interaktif (Budaya, Pahlawan, Kuis, Tentang)",
-      "FR-03: Jelajah Budaya dengan grid 2-kolom, search, dan filter pulau",
-      "FR-04: Detail Budaya menyajikan sejarah singkat, rumah adat, tarian tradisional, dan bahasa daerah",
-      "FR-05: Daftar Pahlawan Nasional dengan grid 2-kolom dan pencarian nama/asal",
-      "FR-06: Detail Pahlawan menyajikan asal daerah, biografi perjuangan, dan highlight fakta menarik",
-      "FR-07: Kuis Intro dengan panduan aturan main (10 soal acak, 15 detik/soal)",
-      "FR-08: Kuis Interaktif dengan opsi pilihan ganda dan indikator progres",
-      "FR-09: Randomized Quiz mengambil 10 soal acak dari 30 bank soal",
-      "FR-10: Instant Feedback Modal (Benar/Salah beserta pembahasan edukatif)",
-      "FR-11: Penghitungan skor otomatis dan penyimpanan rekor High Score",
-      "FR-12: Halaman Hasil Kuis dengan evaluasi performa, reward animasi confetti, dan tombol ulangi/beranda",
-      "FR-13: Halaman Tentang Aplikasi (informasi pengembang PTI Unila 2026 tanpa mencantumkan dosen pengampu sesuai instruksi)",
-      "FR-14: Navigasi back button dan state management yang konsisten",
-      "FR-15: Pelacakan Progres Belajar (Pelacakan otomatis materi 38 provinsi & 38 pahlawan yang dibaca, badge status selesai pada kartu, filter baca/belum, dashboard level wawasan nusantara, dan persistensi lokal via SharedPreferences)"
+      "FR-01: Splash Screen dengan animasi logo dan navigasi otomatis ke Beranda",
+      "FR-02: Beranda dengan rekap statistik progres wawasan, High Score kuis, dan 5 menu utama",
+      "FR-03: Jelajah Budaya dengan grid 2-kolom, pencarian nama/ibu kota, filter 6 pulau, dan filter status baca",
+      "FR-04: Detail Budaya menyajikan sejarah singkat, rumah adat, tarian tradisional, bahasa daerah, dan transisi Hero animation",
+      "FR-05: Galeri Pahlawan Nasional dengan grid 2-kolom, pencarian nama/asal, filter pulau, dan filter status baca",
+      "FR-06: Detail Pahlawan menyajikan biografi perjuangan lengkap, kartu fakta menarik, dan transisi Hero animation",
+      "FR-07: Kuis Intro dengan panduan aturan main (10 butir acak, 15 detik/soal)",
+      "FR-08: Kuis Interaktif dengan opsi pilihan ganda dan indikator hitung mundur waktu",
+      "FR-09: Randomized Quiz Engine mengacak 10 soal dari total 30 bank soal setiap sesi",
+      "FR-10: Instant Feedback Modal (Benar/Salah beserta pembahasan edukatif instan)",
+      "FR-11: Penghitungan skor otomatis dan persistensi rekor High Score lokal",
+      "FR-12: Halaman Hasil Kuis dengan evaluasi performa, sound effect fanfare adaptif, dan reward animasi konfeti",
+      "FR-13: Halaman Tentang Aplikasi (informasi pengembang PTI FKIP Universitas Lampung 2026)",
+      "FR-14: Pelacakan Progres Belajar otomatis dengan lencana centang pada materi yang telah dibaca",
+      "FR-15: Dashboard Progres Belajar (LearningProgressScreen) dengan peringkat gelar wawasan nusantara",
+      "FR-16: Mode Gelap (Dark Mode) adaptif dengan toggle cepat dan penyimpanan preferensi tema",
+      "FR-17: Sound Service dengan efek klik sentuh dan 4 tingkat nada evaluasi kuis",
+      "FR-18: Peta Budaya Digital Indonesia interaktif dengan gestur cubit (pinch zoom) bebas",
+      "FR-19: Visualisasi 38 titik koordinat provinsi presisi pada citra peta proporsional 1400x700",
+      "FR-20: Cultural Preview Card melayang pada peta dengan navigasi instan ke detail budaya"
     ],
     "non_fungsional": [
-      "NFR-01: Usability ramah anak usia SD dan SMP",
-      "NFR-02: Waktu respons rendering < 16ms (60 FPS)",
-      "NFR-03: Kompatibel dengan Android OS (SDK 21 s/d SDK 36)",
-      "NFR-04: Antarmuka adaptif untuk berbagai resolusi layar smartphone",
-      "NFR-05: 100% Offline Ready (semua data dan aset tersimpan di dalam bundle APK)"
+      "NFR-01: Usability ramah anak usia SD (Kelas 4-6) dan SMP dengan antarmuka visual intuitif",
+      "NFR-02: Waktu respons rendering < 16ms (konsisten 60 FPS tanpa jank)",
+      "NFR-03: Kompatibel dengan Android OS (minimum SDK 21 Lollipop s/d SDK 36 Android 16)",
+      "NFR-04: Antarmuka adaptif terhadap beragam ukuran dan orientasi layar smartphone",
+      "NFR-05: 100% Offline Ready (seluruh konten, 80 citra lokal, dan 5 audio tertanam dalam bundle aplikasi)",
+      "NFR-06: Arsitektur perangkat lunak Clean Layered Architecture yang modular dan teruji"
     ]
   },
   "arsitektur_dan_teknologi": {
     "framework": "Flutter (Channel Stable, Dart 3)",
-    "arsitektur": "Layered Architecture (Data, Models, Screens, Widgets, Constants)",
-    "dependencies": {
+    "arsitektur": "Clean Layered Architecture (Constants, Data, Models, Screens, Services)",
+    "dependensi": {
       "google_fonts": "^6.2.1",
       "shared_preferences": "^2.3.2",
-      "confetti": "^0.7.0"
+      "confetti": "^0.7.0",
+      "audioplayers": "^6.8.1",
+      "cupertino_icons": "^1.0.8"
     },
-    "palet_warna": {
-      "primary": "#900500",
-      "accent": "#D4B356",
-      "background": "#FFF5F0",
-      "card_surface": "#FFFFFF",
-      "text_primary": "#2D3142",
-      "text_secondary": "#6B7280"
+    "palet_warna_desain": {
+      "light_mode": {
+        "primary": "#900500",
+        "accent": "#D4B356",
+        "background": "#FFF5F0",
+        "surface": "#FFFFFF",
+        "text_primary": "#2D3142"
+      },
+      "dark_mode": {
+        "primary": "#D4B356",
+        "accent": "#F59E0B",
+        "background": "#0F1722",
+        "surface": "#1E293B",
+        "text_primary": "#F1F5F9"
+      }
     }
   },
-  "kesimpulan": "Transformasi dari web wrapper ke Flutter murni akan meningkatkan performa, kegunaan, dan nilai estetika secara signifikan, memenuhi seluruh kriteria PRD dan SRD dalam proposal mobile programming."
+  "hasil_pengujian_kualitas": {
+    "flutter_analyze": "No issues found! (0 errors, 0 warnings, 0 lints)",
+    "flutter_test": "All tests passed! (2/2 test suites passed)",
+    "uji_fungsional_peta": "38/38 titik berada di daratan, cubit perkecil dapat menampilkan seluruh Indonesia dari Sabang sampai Merauke",
+    "uji_fungsional_audio": "Efek klik tombol dan 4 nada evaluasi kuis beroperasi tanpa latency",
+    "uji_fungsional_tema": "Mode gelap beradaptasi mulus di seluruh 12 layar",
+    "uji_fungsional_progres": "Status baca dan rekor skor tersimpan persisten di memori lokal"
+  },
+  "panduan_penyusunan_bab_laporan": {
+    "bab_1_pendahuluan": "Latar belakang masalah web wrapper, tujuan transformasi ke mobile native, rumusan masalah, dan sasaran pengguna anak SD/SMP.",
+    "bab_2_analisis_kebutuhan": "Inventarisasi aset 38 budaya & 38 pahlawan, matriks transformasi web vs Flutter, serta daftar spesifikasi kebutuhan (FR-01 s/d FR-20, NFR-01 s/d NFR-06).",
+    "bab_3_perancangan_sistem": "Struktur Clean Layered Architecture, perancangan model data, diagram navigasi, skema warna Material 3, dan desain wireframe.",
+    "bab_4_implementasi_sistem": "Uraikan 4 Progres Utama secara kronologis: Progres 1 (Fondasi & Kuis), Progres 2 (Gamifikasi Progres), Progres 3 (Dark Mode & Audio), Progres 4 (Peta Digital Interaktif) beserta bukti commit.",
+    "bab_5_pengujian_dan_evaluasi": "Hasil analisis statis flutter analyze, pengujian otomatis flutter test, dan matriks pengujian fungsional fitur baru.",
+    "bab_6_penutup_dan_saran": "Kesimpulan efektivitas transformasi ke Flutter 60 FPS dan saran pengembangan lanjutan (misal: fitur augmented reality atau kuis daring multiplayer)."
+  }
 }
